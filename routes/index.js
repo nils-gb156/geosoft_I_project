@@ -1,9 +1,18 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const path = require('path');
+const app = express();
+const port = 3000;
+const host = 'localhost';
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+// Statische Dateien aus /public bereitstellen
+app.use(express.static(path.join(__dirname, 'public')));
 
-module.exports = router;
+// Routen einbinden
+const pagesRouter = require('./routes/pages');
+
+app.use('/', pagesRouter);
+
+// Server starten
+app.listen(port, host);
+
+console.log(`Server läuft auf http://${host}:${port}`);
