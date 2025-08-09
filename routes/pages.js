@@ -30,10 +30,10 @@ router.get('/datenschutz', (req, res) => {
 
 // neue Station in MongoDB speichern
 router.post('/save-station', async (req, res) => {
-    const { fileName, name, description, url, geojson } = req.body;
+    const { name, description, url, geojson } = req.body;
 
-    if (!fileName || !name || !geojson) {
-        return res.status(400).json({error: "Dateiname, Name oder GeoJSON fehlt"});
+    if (!name || !description || !geojson) {
+        return res.status(400).json({error: "Name, Beschreibung oder GeoJSON fehlt"});
     }
 
     try {
@@ -48,7 +48,6 @@ router.post('/save-station', async (req, res) => {
         }
 
         const result = await collection.insertOne({
-            fileName: fileName,
             name: name,
             description: description,
             url: url,
