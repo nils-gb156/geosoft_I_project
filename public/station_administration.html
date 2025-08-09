@@ -23,6 +23,7 @@
 
     <script defer src="javascripts/main.js"></script>
     <script defer src="javascripts/station/fileupload.js"></script>
+    <script defer src="javascripts/station/mapdraw.js"></script>
 
 </head>
 
@@ -78,6 +79,35 @@
                     <div id="map-fileupload" class="mx-auto" style="height: 400px; width: 80%;"></div><br>
 
                     <div class="container">
+                        
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">Name</span>
+                                    <input id="fileupload-station-name" type="text" class="form-control" aria-label="Name">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">Beschreibung</span>
+                                    <input id="fileupload-station-description" type="text" class="form-control"
+                                        aria-label="Beschreibung">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">URL</span>
+                                    <input id="fileupload-station-url" type="text" class="form-control" aria-label="URL">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row justify-content-center mb-3">
                             <div class="col-12 col-md-6">
                                 <div class="input-group">
@@ -89,11 +119,22 @@
                             </div>
                         </div>
 
+                    </div>
+                </div>
+            </div>
+
+             <div id="mapdraw" style="display: none;">
+                <div class="mb-4 text-center">
+                    <br>
+                    <div id="map-draw" class="mx-auto" style="height: 400px; width: 80%;"></div><br>
+
+                    <div class="container">
+                       
                         <div class="row justify-content-center mb-3">
                             <div class="col-12 col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Name</span>
-                                    <input id="station-name" type="text" class="form-control" aria-label="Name">
+                                    <input id="draw-station-name" type="text" class="form-control" aria-label="Name">
                                 </div>
                             </div>
                         </div>
@@ -102,7 +143,7 @@
                             <div class="col-12 col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Beschreibung</span>
-                                    <input id="station-description" type="text" class="form-control"
+                                    <input id="draw-station-description" type="text" class="form-control"
                                         aria-label="Beschreibung">
                                 </div>
                             </div>
@@ -112,14 +153,27 @@
                             <div class="col-12 col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">URL</span>
-                                    <input id="station-url" type="text" class="form-control" aria-label="URL">
+                                    <input id="draw-station-url" type="text" class="form-control" aria-label="URL">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <button class="btn btn-primary" type="button" onclick="addRouteFromDraw()">
+                                        Station hinzufügen
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
                     </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
 
         </div>
     </main>
