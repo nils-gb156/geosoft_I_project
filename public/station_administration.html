@@ -13,6 +13,17 @@
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+    <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+
+    <script defer src="javascripts/main.js"></script>
+    <script defer src="javascripts/station/fileupload.js"></script>
+
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -43,6 +54,74 @@
 
     <main>
 
+        <div class="container mt-4" id="route-adding">
+            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Stationen hinzufügen</h4>
+
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a id="fileupload-nav" class="nav-link text-dark active" href="#"
+                        onclick="changeRider('fileupload')">Dateiupload</a>
+                </li>
+                <li class="nav-item">
+                    <a id="mapdraw-nav" class="nav-link text-dark" href="#"
+                        onclick="changeRider('mapdraw')">Zeichnen</a>
+                </li>
+                <li class="nav-item">
+                    <a id="textfield-nav" class="nav-link text-dark" href="#"
+                        onclick="changeRider('textfield')">Textfeld</a>
+                </li>
+            </ul>
+
+            <div id="fileupload">
+                <div class="mb-4 text-center">
+                    <br>
+                    <div id="map-fileupload" class="mx-auto" style="height: 400px; width: 80%;"></div><br>
+
+                    <div class="container">
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <input type="file" id="geojson-route-input" class="form-control" accept=".geojson">
+                                    <button class="btn btn-primary" type="button" onclick="addRouteFromInput()">
+                                        Station hinzufügen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">Name</span>
+                                    <input id="station-name" type="text" class="form-control" aria-label="Name">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">Beschreibung</span>
+                                    <input id="station-description" type="text" class="form-control"
+                                        aria-label="Beschreibung">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">URL</span>
+                                    <input id="station-url" type="text" class="form-control" aria-label="URL">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </main>
 
     <footer class="mt-auto py-2" style="background-color: #e2e2e2;">
