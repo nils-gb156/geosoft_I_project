@@ -1,6 +1,6 @@
 "use-strict"
 
-const map = L.map('map-fileupload').setView([52, 10.51], 6);
+const fileuploadMap = L.map('map-fileupload').setView([52, 10.51], 6);
 let routeLayer;
 
 /**
@@ -9,9 +9,9 @@ let routeLayer;
 async function addRouteFromInput() {
     const input = document.getElementById("geojson-route-input");
     const file = input.files[0];
-    const name = document.getElementById("station-name").value;
-    let description = document.getElementById("station-description").value;
-    const url = document.getElementById("station-url").value;
+    const name = document.getElementById("fileupload-station-name").value;
+    let description = document.getElementById("fileupload-station-description").value;
+    const url = document.getElementById("fileupload-station-url").value;
 
     if (!file) {
         alert("Bitte ein GeoJSON Feature oder FeatureCollection mit Point oder Polygon laden.");
@@ -24,41 +24,21 @@ async function addRouteFromInput() {
     }
 
     if (!description && !url) {
-        alert("Bitte Beschreibung der Station angeben.");
+        alert("Bitte Beschreibung der Station oder Wikipedia URL angeben.");
         return;
     }
 
-    // Wenn URL eine Wikipediaseite ist, ersetze die Beschreibung durch den ersten Satz des Artikels
-if (url && url.includes("wikipedia.org/wiki")) {
-    try {
-        // Titel korrekt encodieren
-        const titlePart = url.split("/wiki/")[1];
-        const encodedTitle = encodeURIComponent(titlePart);
-
-        const wikiResponse = await fetch(
-            `https://de.wikipedia.org/api/rest_v1/page/summary/${encodedTitle}`,
-            { headers: { 'Accept': 'application/json' } }
-        );
-
-        if (!wikiResponse.ok) {
-            throw new Error(`Wikipedia API antwortete mit Status ${wikiResponse.status}`);
-        }
-
-        const data = await wikiResponse.json();
-
-        if (data.extract) {
-            // Ersten Satz extrahieren
-            const firstSentence = data.extract.split(".")[0];
-            description = firstSentence;
-        } else {
-            console.warn("Wikipedia-Antwort enthält keine Beschreibung.");
+    if (url && url.includes("wikipedia.org/wiki")) {
+        const wikiDescription = await getWikipediaFirstSentence(url);
+        if (wikiDescription) {
+            description = wikiDescription;
         }
     }
-    catch (error) {
-        console.warn("Wikipedia-Beschreibung konnte nicht geladen werden:", error);
-    }
-}
 
+    if (!description) {
+        alert("Keine gültige Beschreibung verfügbar.");
+        return;
+    }
 
     const reader = new FileReader();
 
@@ -80,7 +60,6 @@ if (url && url.includes("wikipedia.org/wiki")) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    fileName: fileName,
                     name: name,
                     description: description,
                     url: url,
@@ -102,11 +81,11 @@ if (url && url.includes("wikipedia.org/wiki")) {
 
             // Felder zurücksetzen
             routeLayer.clearLayers();
-            map.setView([52, 10.51], 6);
+            fileuploadMap.setView([52, 10.51], 6);
             document.getElementById("geojson-route-input").value = null
-            document.getElementById("station-name").value = null;
-            document.getElementById("station-description").value = null;
-            document.getElementById("station-url").value = null;
+            document.getElementById("fileupload-station-name").value = null;
+            document.getElementById("fileupload-station-description").value = null;
+            document.getElementById("fileupload-station-url").value = null;
 
         } catch (error) {
             console.error("Speichern fehlgeschlagen:", error);
@@ -121,16 +100,15 @@ if (url && url.includes("wikipedia.org/wiki")) {
  * Initialisiert die Karte beim Laden der Webseite.
  */
 function initMapFileInput() {
-    //map = L.map('map-fileupload').setView([52, 10.51], 6);
 
     // OSM
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+    }).addTo(fileuploadMap);
 
     // Route hinzufügen, sobald sie geladen wird
-    routeLayer = L.geoJSON().addTo(map);
+    routeLayer = L.geoJSON().addTo(fileuploadMap);
 
     document.getElementById("geojson-route-input").addEventListener('change', function () {
         const file = this.files[0];
@@ -150,7 +128,7 @@ function initMapFileInput() {
                 // Vorherige Route entfernen und neue hinzufügen
                 routeLayer.clearLayers();
                 routeLayer.addData(geojson);
-                map.fitBounds(routeLayer.getBounds());
+                fileuploadMap.fitBounds(routeLayer.getBounds());
 
             } catch (error) {
                 console.error("Fehler beim Parsen:", error);

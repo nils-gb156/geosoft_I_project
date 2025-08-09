@@ -28,9 +28,9 @@ function changeRider(tab) {
         }, 200);
     }
 
-    if (tab === "fileupload" && map) {
+    if (tab === "fileupload" && fileuploadMap) {
         setTimeout(() => {
-            map.invalidateSize();
+            fileuploadMap.invalidateSize();
         }, 200);
     }
 }
