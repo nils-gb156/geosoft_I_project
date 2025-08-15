@@ -79,4 +79,28 @@ router.get('/get-stations', async (req, res) => {
     }
 })
 
+// Löschen einer Route aus MongoDB
+router.post('/delete-station', async (req, res) => {
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).json({ error: "Keine Station angegeben." });
+    }
+
+    try {
+        const collection = db.getDb().collection('stations');
+        const result = await collection.deleteOne({ name: name });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: "Station nicht gefunden." });
+        }
+
+        res.status(200).json({ message: "Station erfolgreich gelöscht." });
+
+    } catch (error) {
+        console.error("Fehler beim Löschen der Station:", error);
+        res.status(500).json({ error: "Fehler beim Löschen der Station" });
+    }
+});
+
 module.exports = router;
