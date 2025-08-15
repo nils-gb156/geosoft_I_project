@@ -8,12 +8,12 @@ function changeRider(tab) {
     // Alle Container ausblenden
     document.getElementById("fileupload").style.display = "none";
     document.getElementById("mapdraw").style.display = "none";
-    //document.getElementById("textfield").style.display = "none";
+    document.getElementById("textfield").style.display = "none";
 
     // Alle Tabs deaktivieren
     document.getElementById("fileupload-nav").className = "nav-link text-dark";
     document.getElementById("mapdraw-nav").className = "nav-link text-dark";
-    //document.getElementById("textfield-nav").className = "nav-link text-dark";
+    document.getElementById("textfield-nav").className = "nav-link text-dark";
 
     // Gewählten Container anzeigen
     document.getElementById(tab).style.display = "block";
