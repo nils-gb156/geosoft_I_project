@@ -63,4 +63,20 @@ router.post('/save-station', async (req, res) => {
     }
 })
 
+// Auflisten aller Stationen aus MongoDB
+router.get('/get-stations', async (req, res) => {
+    try {
+        const collection = db.getDb().collection('stations');
+
+        const stations = await collection
+            .find({}, { projection: { name: 1, description: 1, url: 1, geojson: 1 } })
+            .toArray();
+
+        res.json(stations);
+    } catch (error) {
+        console.error("Fehler beim Laden der Stationen:", error);
+        res.status(500).json({ error: "Fehler beim Laden der Stationen." });
+    }
+})
+
 module.exports = router;

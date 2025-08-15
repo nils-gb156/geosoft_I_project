@@ -104,12 +104,12 @@ async function addRouteFromDraw() {
             return;
         }
 
-        // loadRouteList();
+        loadStations();
         alert("Station erfolgreich gespeichert")
 
         // Felder zurücksetzen
         drawnStation.clearLayers();
-        map.setView([52, 10.51], 6);
+        drawMap.setView([52, 10.51], 6);
         document.getElementById("draw-station-name").value = null;
         document.getElementById("draw-station-description").value = null;
         document.getElementById("draw-station-url").value = null;

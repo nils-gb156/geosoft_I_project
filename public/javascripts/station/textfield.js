@@ -66,7 +66,7 @@ async function addRouteFromTextfield() {
             return;
         }
 
-        // loadRouteList();
+        loadStations();
         alert("Station erfolgreich gespeichert")
 
         // Felder zurücksetzen
