@@ -33,6 +33,8 @@ function changeRider(tab) {
             fileuploadMap.invalidateSize();
         }, 200);
     }
+    
+    
 }
 
 /**
