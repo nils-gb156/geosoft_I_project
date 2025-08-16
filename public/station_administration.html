@@ -22,9 +22,13 @@
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
 
     <script defer src="javascripts/main.js"></script>
-    <script defer src="javascripts/station/fileupload.js"></script>
-    <script defer src="javascripts/station/mapdraw.js"></script>
-    <script defer src="javascripts/station/textfield.js"></script>
+    <script defer src="javascripts/station/internal.js"></script>
+    <script defer src="javascripts/station/create/fileupload.js"></script>
+    <script defer src="javascripts/station/create/mapdraw.js"></script>
+    <script defer src="javascripts/station/create/textfield.js"></script>
+    <script defer src="javascripts/station/show.js"></script>
+    <script defer src="javascripts/station/edit.js"></script>
+    <script defer src="javascripts/station/delete.js"></script>
 
 </head>
 
@@ -55,6 +59,25 @@
     </header>
 
     <main>
+
+        <div class="container mt-4" id="route-administration">
+            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Stationen bearbeiten</h4>
+
+            <div id="station-map" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Beschreibung</th>
+                        <th>URL</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="stations-table-body"></tbody>
+            </table>
+
+        </div>
 
         <div class="container mt-4" id="route-adding">
             <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Stationen hinzufügen</h4>
@@ -189,7 +212,8 @@
                             <div class="col-12 col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Name</span>
-                                    <input id="textfield-station-name" type="text" class="form-control" aria-label="Name">
+                                    <input id="textfield-station-name" type="text" class="form-control"
+                                        aria-label="Name">
                                 </div>
                             </div>
                         </div>
