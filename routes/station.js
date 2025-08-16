@@ -78,4 +78,42 @@ router.post('/delete-station', async (req, res) => {
     }
 });
 
+// Änderung der Station in MongoDB speichern
+router.post('/edit-station', async (req, res) => {
+    const { oldName, name, description, url } = req.body;
+
+    if (!name || !description) {
+        return res.status(400).json({error: "Name oder Beschreibung fehlt"});
+    }
+
+    try {
+        const collection = db.getDb().collection('stations');
+
+        // Prüfe, ob der neue Name schon vergeben ist (außer bei sich selbst)
+        if (oldName !== name) {
+            const nameTaken = await collection.findOne({ name: name });
+            if (nameTaken) {
+                return res.status(409).json({ error: "Name bereits vergeben" });
+            }
+        }
+
+        // Update der Station
+        const result = await collection.updateOne(
+            { name: oldName }, 
+            { $set: { name, description, url } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: "Station existiert nicht" });
+        }
+
+        res.status(200).json({ message: "Station gespeichert" });
+
+    } catch (error) {
+        console.error("Fehler beim Speichern der Station:", error);
+        res.status(500).json({ error: "Fehler beim Speichern der Station." });
+    }
+});
+
+
 module.exports = router;

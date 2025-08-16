@@ -91,33 +91,3 @@ function hasExactlyOneFeature(geojson) {
     }
     return false;
 }
-
-async function getWikipediaFirstSentence(url) {
-    try {
-        // Titel korrekt encodieren
-        const titlePart = url.split("/wiki/")[1];
-        const encodedTitle = encodeURIComponent(titlePart);
-
-        const wikiResponse = await fetch(
-            `https://de.wikipedia.org/api/rest_v1/page/summary/${encodedTitle}`,
-            { headers: { 'Accept': 'application/json' } }
-        );
-
-        if (!wikiResponse.ok) {
-            throw new Error(`Wikipedia API antwortete mit Status ${wikiResponse.status}`);
-        }
-
-        const data = await wikiResponse.json();
-
-        if (data.extract) {
-            // Ersten Satz extrahieren
-            const firstSentence = data.extract.split(".")[0];
-            return firstSentence
-        } else {
-            console.warn("Wikipedia-Antwort enthält keine Beschreibung.");
-        }
-    }
-    catch (error) {
-        console.warn("Wikipedia-Beschreibung konnte nicht geladen werden:", error);
-    }
-}
