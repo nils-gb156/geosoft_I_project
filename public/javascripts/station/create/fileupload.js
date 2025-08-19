@@ -81,7 +81,7 @@ async function addRouteFromInput() {
 
             // Felder zurücksetzen
             routeLayer.clearLayers();
-            fileuploadMap.setView([52, 10.51], 6);
+            fileuploadMap.setView([51, 10], 6);
             document.getElementById("geojson-route-input").value = null
             document.getElementById("fileupload-station-name").value = null;
             document.getElementById("fileupload-station-description").value = null;
