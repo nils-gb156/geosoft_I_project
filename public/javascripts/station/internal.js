@@ -72,7 +72,7 @@ async function loadStations() {
             row.innerHTML = `
                 <td>${station.name}</td>
                 <td>${station.description}</td>
-                <td><a href="${station.url}" target="_blank">Link</a></td>
+                <td><a href="${station.url}" target="_blank">${station.url}</a></td>
                 <td class="text-center"><img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;"></td>   
                 <td class="text-center"><img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="height: 25px; cursor: pointer;"></td>
                 <td class="text-center"><img src="images/delete.png" alt="Löschen" data-action="delete" style="height: 25px; cursor: pointer;"></td>
