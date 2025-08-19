@@ -11,11 +11,11 @@ async function editStation(station) {
     // Finde die Zeile der aktuellen Station
     const row = Array.from(rows).find(r => JSON.parse(r.dataset.station).name === station.name);
 
-    // Speichern-Button und Cancel Button erzeugen 
-    const actionCells = row.querySelectorAll("td:nth-child(4), td:nth-child(5), td:nth-child(6)");
-    actionCells[0].innerHTML = ''; // View ausblenden
-    actionCells[1].innerHTML = '<img src="images/save.png" alt="Speichern" data-action="save" style="height: 25px; cursor: pointer;">';
-    actionCells[2].innerHTML = '<img src="images/cancel.png" alt="Abbrechen" data-action="cancel" style="height: 25px; cursor: pointer;">';
+    // Buttons nur für diese Zeile umwandeln
+    row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(5)").innerHTML = '<img src="images/save.png" alt="Speichern" data-action="save" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(6)").innerHTML = '<img src="images/cancel.png" alt="Abbrechen" data-action="cancel" style="height: 25px; cursor: pointer;">';
+
 
     // Zellen in Input-Felder umwandeln
     row.querySelector("td:nth-child(1)").innerHTML = `<input type="text" class="form-control" value="${station.name}">`;
@@ -78,7 +78,7 @@ async function saveStation(station) {
         // Tabelle wieder normal darstellen
         row.querySelector("td:nth-child(1)").textContent = newName;
         row.querySelector("td:nth-child(2)").textContent = newDescription;
-        row.querySelector("td:nth-child(3)").innerHTML = `<a href="${newUrl}" target="_blank">Link</a>`;
+        row.querySelector("td:nth-child(3)").innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
 
         // Buttons wiederherstellen: View / Edit / Delete
         row.querySelector("td:nth-child(4)").innerHTML =
@@ -117,7 +117,7 @@ function cancelStation(station) {
     // Tabelle wieder normal darstellen
     row.querySelector("td:nth-child(1)").textContent = station.name;
     row.querySelector("td:nth-child(2)").textContent = station.description;
-    row.querySelector("td:nth-child(3)").innerHTML = `<a href="${station.url}" target="_blank">Link</a>`;
+    row.querySelector("td:nth-child(3)").innerHTML = `<a href="${station.url}" target="_blank">${station.url}</a>`;
 
     // Buttons wiederherstellen: View / Edit / Delete
     row.querySelector("td:nth-child(4)").innerHTML =
