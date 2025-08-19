@@ -1,6 +1,6 @@
 "use strict"
 
-const stationMap = L.map('station-map').setView([52, 10.51], 6);
+const stationMap = L.map('station-map').setView([51, 10], 6);
 let activeStationLayer;
 loadStations();
 

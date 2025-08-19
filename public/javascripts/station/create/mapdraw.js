@@ -1,6 +1,6 @@
 "use strict"
 
-const drawMap = L.map('map-draw').setView([52, 10.51], 6);
+const drawMap = L.map('map-draw').setView([51, 10], 6);
 let drawnStation;
 
 /**

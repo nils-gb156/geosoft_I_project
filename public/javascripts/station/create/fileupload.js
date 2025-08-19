@@ -1,6 +1,6 @@
 "use-strict"
 
-const fileuploadMap = L.map('map-fileupload').setView([52, 10.51], 6);
+const fileuploadMap = L.map('map-fileupload').setView([51, 10], 6);
 let routeLayer;
 
 /**
