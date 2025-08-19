@@ -101,15 +101,17 @@
                 </li>
             </ul>
 
-            <div id="fileupload">
-                <div class="mb-4 text-center">
-                    <br>
-                    <div id="map-fileupload" class="mx-auto" style="height: 400px; width: 80%;"></div><br>
+            <div id="fileupload" class="container">
+                <br>
+                <div class="row justify-content-center mb-4">
 
-                    <div class="container">
+                    <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
+                        <div id="map-fileupload" style="height: 350px; width: 80%;"></div>
+                    </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Name</span>
                                     <input id="fileupload-station-name" type="text" class="form-control"
@@ -118,8 +120,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Beschreibung</span>
                                     <input id="fileupload-station-description" type="text" class="form-control"
@@ -128,8 +130,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">URL</span>
                                     <input id="fileupload-station-url" type="text" class="form-control"
@@ -138,8 +140,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <input type="file" id="geojson-route-input" class="form-control" accept=".geojson">
                                     <button class="btn btn-primary" type="button" onclick="addRouteFromInput()">
@@ -148,20 +150,22 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
 
             <div id="mapdraw" style="display: none;">
-                <div class="mb-4 text-center">
-                    <br>
-                    <div id="map-draw" class="mx-auto" style="height: 400px; width: 80%;"></div><br>
+                <br>
+                <div class="row justify-content-center mb-4">
 
-                    <div class="container">
+                    <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
+                        <div id="map-draw" class="mx-auto" style="height: 350px; width: 80%;"></div>
+                    </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+
+                    <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Name</span>
                                     <input id="draw-station-name" type="text" class="form-control" aria-label="Name">
@@ -169,8 +173,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Beschreibung</span>
                                     <input id="draw-station-description" type="text" class="form-control"
@@ -179,8 +183,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">URL</span>
                                     <input id="draw-station-url" type="text" class="form-control" aria-label="URL">
@@ -188,8 +192,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <button class="btn btn-primary" type="button" onclick="addRouteFromDraw()">
                                         Station hinzufügen
@@ -197,23 +201,22 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
 
             <div id="textfield" style="display: none;">
-                <div class="mb-4 text-center">
-                    <br>
-                    <textarea id="geojson-station-textfield" class="form-control mx-auto"
-                        style="height: 400px; max-width: 80%; width: 80%; resize: vertical; text-align: left; vertical-align: top; box-sizing: border-box;">
-                    </textarea>
-                    <br>
+                <br>
+                <div class="row justify-content-center mb-4">
 
-                    <div class="container">
+                    <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
+                        <textarea id="geojson-station-textfield" class="form-control"
+                            style="height: 350px; width: 80%; resize: vertical; text-align: left; vertical-align: top; box-sizing: border-box;"></textarea>
+                    </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Name</span>
                                     <input id="textfield-station-name" type="text" class="form-control"
@@ -222,8 +225,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">Beschreibung</span>
                                     <input id="textfield-station-description" type="text" class="form-control"
@@ -232,8 +235,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text" style="width: 140px;">URL</span>
                                     <input id="textfield-station-url" type="text" class="form-control" aria-label="URL">
@@ -241,8 +244,8 @@
                             </div>
                         </div>
 
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
                                 <div class="input-group">
                                     <button class="btn btn-primary" type="button" onclick="addRouteFromTextfield()">
                                         Station hinzufügen
@@ -250,7 +253,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
