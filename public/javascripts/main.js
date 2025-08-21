@@ -2,9 +2,12 @@
 
 /**
  * Sichtbarkeit der Container für Stationserstellung umschalten.
+ * @param {Event} event
  * @param {string} tab
  */
-function changeRider(tab) {
+function changeRider(event, tab) {
+    event.preventDefault(); // verhindert Scroll nach oben
+
     // Alle Container ausblenden
     document.getElementById("fileupload").style.display = "none";
     document.getElementById("mapdraw").style.display = "none";

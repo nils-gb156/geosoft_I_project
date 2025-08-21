@@ -1,6 +1,6 @@
 "use strict"
 
-const stationMap = L.map('station-map').setView([52, 10.51], 6);
+const stationMap = L.map('station-map').setView([51, 10], 6);
 let activeStationLayer;
 loadStations();
 
@@ -22,11 +22,20 @@ function initStationMap() {
  */
 function showStationOnMap(station) {
     let geojson = station.geojson;
-    activeStationLayer = L.geoJSON().addTo(stationMap);
-    activeStationLayer.clearLayers(),
-        activeStationLayer.addData(geojson);
-    stationMap.fitBounds(activeStationLayer.getBounds());
 
+    if (!activeStationLayer) {
+        // Layer zum ersten Mal erstellen
+        activeStationLayer = L.geoJSON(geojson).addTo(stationMap);
+    } else {
+        // Bestehenden Layer leeren und neue Daten hinzufügen
+        activeStationLayer.clearLayers();
+        activeStationLayer.addData(geojson);
+    }
+
+    // Karte auf die Station zentrieren
+    if (activeStationLayer.getBounds().isValid()) {
+        stationMap.fitBounds(activeStationLayer.getBounds());
+    }
 }
 
 // Warte bis das HTML-Element existiert

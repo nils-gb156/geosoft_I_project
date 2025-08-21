@@ -1,6 +1,6 @@
 "use-strict"
 
-const routePlanningMap = L.map('map-routes').setView([52, 10.51], 6);
+const routePlanningMap = L.map('map-routes').setView([51, 10], 6);
 let routeLayer;
 
 

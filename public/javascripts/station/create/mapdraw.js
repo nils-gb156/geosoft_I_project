@@ -1,6 +1,6 @@
 "use strict"
 
-const drawMap = L.map('map-draw').setView([52, 10.51], 6);
+const drawMap = L.map('map-draw').setView([51, 10], 6);
 let drawnStation;
 
 /**
@@ -109,7 +109,7 @@ async function addRouteFromDraw() {
 
         // Felder zurücksetzen
         drawnStation.clearLayers();
-        drawMap.setView([52, 10.51], 6);
+        drawMap.setView([51, 10], 6);
         document.getElementById("draw-station-name").value = null;
         document.getElementById("draw-station-description").value = null;
         document.getElementById("draw-station-url").value = null;
