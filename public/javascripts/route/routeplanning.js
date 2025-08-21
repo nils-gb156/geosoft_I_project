@@ -2,6 +2,7 @@
 
 const routePlanningMap = L.map('map-routes').setView([51, 10], 6);
 let routeLayer;
+let previousSelectedNames = new Set();
 
 
 /**
@@ -9,45 +10,60 @@ let routeLayer;
  */
 function initMapFileInput() {
 
-    // OSM
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // OSM
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(routePlanningMap);
+  }).addTo(routePlanningMap);
 }
 
-
 async function loadStationsOnMap() {
-    // Vorherige Marker entfernen
-    if (routeLayer) {
-        routePlanningMap.removeLayer(routeLayer);
+  // Vorherige Marker entfernen
+  if (routeLayer) {
+    routePlanningMap.removeLayer(routeLayer);
+  }
+
+  try {
+    const response = await fetch('/get-stations');
+    const stations = await response.json();
+
+    const selectedNames = Array.from(document.querySelectorAll(".station-checkbox:checked"))
+      .map(cb => cb.value);
+
+    const selectedStations = stations.filter(station => selectedNames.includes(station.name));
+
+    // GeoJSON Layer erstellen
+    routeLayer = L.layerGroup(); // leere Gruppe
+
+    selectedStations.forEach(station => {
+      if (station.geojson) {
+        L.geoJSON(station.geojson)
+          .bindPopup(`<b>${station.name}</b><br>${station.description}`)
+          .addTo(routeLayer);
+      }
+    });
+
+    routeLayer.addTo(routePlanningMap);
+
+    // Route aktualisieren/entfernen, falls Marker entfernt werden 
+    const waypoints = buildWaypointsFromChecked();
+
+    if (routeControl) {
+      if (waypoints.length >= 2) {
+        // nur Waypoints updaten -> Segment des entfernten Markers verschwindet
+        routeControl.setWaypoints(waypoints);
+      } else {
+        // < 2 Marker -> Route komplett entfernen
+        routePlanningMap.removeControl(routeControl);
+        routeControl = null;
+      }
     }
+    
+    previousSelectedNames = new Set(selectedNames);
 
-    try {
-        const response = await fetch('/get-stations');
-        const stations = await response.json();
-
-        const selectedNames = Array.from(document.querySelectorAll(".station-checkbox:checked"))
-            .map(cb => cb.value);
-
-        const selectedStations = stations.filter(station => selectedNames.includes(station.name));
-
-        // GeoJSON Layer erstellen
-        routeLayer = L.layerGroup(); // leere Gruppe
-
-        selectedStations.forEach(station => {
-            if (station.geojson) {
-                L.geoJSON(station.geojson)
-                 .bindPopup(`<b>${station.name}</b><br>${station.description}`)
-                 .addTo(routeLayer);
-            }
-        });
-
-        routeLayer.addTo(routePlanningMap);
-
-    } catch (error) {
-        console.error("Fehler beim Laden der Stationen für die Karte:", error);
-    }
+  } catch (error) {
+    console.error("Fehler beim Laden der Stationen für die Karte:", error);
+  }
 }
 
 document.getElementById("select-all").addEventListener("change", loadStationsOnMap);
@@ -60,7 +76,7 @@ const orsProxyRouter = {
   route(waypoints, callback, context) {
     // Abbrechen falls noch eine Anfrage läuft
     if (orsProxyRouter._pendingController) {
-      try { orsProxyRouter._pendingController.abort(); } catch(_) {}
+      try { orsProxyRouter._pendingController.abort(); } catch (_) { }
       orsProxyRouter._pendingController = null;
     }
 
@@ -77,39 +93,39 @@ const orsProxyRouter = {
       body: JSON.stringify({ coordinates: coords }),
       signal: controller.signal
     })
-    .then(async res => {
-      if (!res.ok) throw new Error(`Backend ${res.status}`);
-      const data = await res.json();
+      .then(async res => {
+        if (!res.ok) throw new Error(`Backend ${res.status}`);
+        const data = await res.json();
 
-      // ORS liefert encodierte Polyline -> decodieren
-      if (data?.routes && typeof data.routes[0]?.geometry === 'string') {
-        const latLngs = decodePolyline(data.routes[0].geometry, 5);
-        const distance = data.routes[0].summary?.distance || 0;
-        const duration = data.routes[0].summary?.duration || 0;
+        // ORS liefert encodierte Polyline -> decodieren
+        if (data?.routes && typeof data.routes[0]?.geometry === 'string') {
+          const latLngs = decodePolyline(data.routes[0].geometry, 5);
+          const distance = data.routes[0].summary?.distance || 0;
+          const duration = data.routes[0].summary?.duration || 0;
 
-        const routeForLRM = {
-          name: 'Bike (ORS)',
-          coordinates: latLngs,
-          summary: { totalDistance: distance, totalTime: duration },
-          instructions: [],
-          waypoints: waypoints.map(wp => ({ latLng: wp.latLng })),
-          inputWaypoints: waypoints
-        };
+          const routeForLRM = {
+            name: 'Bike (ORS)',
+            coordinates: latLngs,
+            summary: { totalDistance: distance, totalTime: duration },
+            instructions: [],
+            waypoints: waypoints.map(wp => ({ latLng: wp.latLng })),
+            inputWaypoints: waypoints
+          };
 
-        return callback.call(context, null, [routeForLRM]);
-      }
+          return callback.call(context, null, [routeForLRM]);
+        }
 
-      throw new Error('Unerwartetes ORS-Format');
-    })
-    .catch(err => {
-      if (controller.signal.aborted) return; 
-      callback.call(context, err);
-    })
-    .finally(() => {
-      if (orsProxyRouter._pendingController === controller) {
-        orsProxyRouter._pendingController = null;
-      }
-    });
+        throw new Error('Unerwartetes ORS-Format');
+      })
+      .catch(err => {
+        if (controller.signal.aborted) return;
+        callback.call(context, err);
+      })
+      .finally(() => {
+        if (orsProxyRouter._pendingController === controller) {
+          orsProxyRouter._pendingController = null;
+        }
+      });
   }
 };
 
@@ -135,30 +151,31 @@ function createBikeRouteFromSelectedStations() {
     routeControl = null;
   }
 
+
+
   // Routing-Control mit ORS-Router
   routeControl = L.Routing.control({
     waypoints,
     router: orsProxyRouter,
     showAlternatives: false,
-    routeWhileDragging: true,
+    draggableWaypoints: false,
+    addWaypoints: false,
+    routeWhileDragging: false,
     addWaypoints: false,
     fitSelectedRoutes: true,
     show: false,
-    lineOptions: { styles: [{ weight: 5, opacity: 0.9 }] }
+    lineOptions: { styles: [{ weight: 5, opacity: 0.9 }] },
+    createMarker: () => null
   }).addTo(routePlanningMap);
+
+
+
 }
-
-
-
-
-
-
-
 
 
 // Warte bis das HTML-Element existiert
 document.addEventListener("DOMContentLoaded", () => {
-    if (document.getElementById("map-routes")) {
-        initMapFileInput();
-    }
+  if (document.getElementById("map-routes")) {
+    initMapFileInput();
+  }
 })

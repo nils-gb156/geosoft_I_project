@@ -114,3 +114,15 @@ function decodePolyline(str, precision = 5) {
   }
   return coordinates;
 }
+
+// Funktion baut Waypoints aus aktuell gecheckten Checkboxen
+
+function buildWaypointsFromChecked() {
+  const checked = document.querySelectorAll("#stations-table-body input[type='checkbox']:checked");
+  const waypoints = Array.from(checked).map(cb => {
+    const lat = parseFloat(cb.dataset.lat);
+    const lng = parseFloat(cb.dataset.lng);
+    return (!isNaN(lat) && !isNaN(lng)) ? L.Routing.waypoint(L.latLng(lat, lng)) : null;
+  }).filter(Boolean);
+  return waypoints;
+}
