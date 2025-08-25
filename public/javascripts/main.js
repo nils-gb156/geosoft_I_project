@@ -118,11 +118,16 @@ function decodePolyline(str, precision = 5) {
 // Funktion baut Waypoints aus aktuell gecheckten Checkboxen
 
 function buildWaypointsFromChecked() {
-  const checked = document.querySelectorAll("#stations-table-body input[type='checkbox']:checked");
-  const waypoints = Array.from(checked).map(cb => {
+  const checkedBoxes = Array.from(document.querySelectorAll("#stations-table-body input[type='checkbox']:checked"));
+  const checkedSet = new Set(checkedBoxes.map(cb => cb.value));
+  const byNameCb = new Map(checkedBoxes.map(cb => [cb.value, cb]));
+
+  const orderedNames = selectionOrder.filter(name => checkedSet.has(name));
+
+  return orderedNames.map(name => {
+    const cb = byNameCb.get(name);
     const lat = parseFloat(cb.dataset.lat);
     const lng = parseFloat(cb.dataset.lng);
     return (!isNaN(lat) && !isNaN(lng)) ? L.Routing.waypoint(L.latLng(lat, lng)) : null;
   }).filter(Boolean);
-  return waypoints;
 }

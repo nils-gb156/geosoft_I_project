@@ -2,6 +2,9 @@
 
 loadStations();
 
+let selectionOrder = []; // Reihenfolge der angehakten Stationen
+
+
 /**
  * Läd alle Stationen aus MongoDB und stellt sie in der Tabelle dar.
  */
@@ -48,17 +51,40 @@ async function loadStations() {
 
             // Checkbox-Event
             const checkbox = row.querySelector(".station-checkbox");
-            checkbox.addEventListener("change", loadStationsOnMap);
+            checkbox.addEventListener("change", (e) => {
+                const name = e.target.value;
+                if (e.target.checked) {
+                    if (!selectionOrder.includes(name)) selectionOrder.push(name);
+                } else {
+                    const i = selectionOrder.indexOf(name);
+                    if (i !== -1) selectionOrder.splice(i, 1);
+                }
+                loadStationsOnMap();
+            });
+
         });
 
         // Master-Checkbox steuert alle Zeilen
         const selectAll = document.getElementById("select-all");
         selectAll.addEventListener("change", () => {
-            document.querySelectorAll(".station-checkbox").forEach(cb => {
-                cb.checked = selectAll.checked;
-            });
-            
+            const boxes = document.querySelectorAll(".station-checkbox");
+
+            if (selectAll.checked) {
+                boxes.forEach(cb => {
+                    if (!cb.checked) {
+                        cb.checked = true;
+                        if (!selectionOrder.includes(cb.value)) selectionOrder.push(cb.value);
+                    }
+                });
+            } else {
+                boxes.forEach(cb => { cb.checked = false; });
+                selectionOrder.length = 0; // leeren
+            }
+
+        
+            loadStationsOnMap();
         });
+
 
     } catch (error) {
         console.error("Fehler beim Laden der Stationen:", error);

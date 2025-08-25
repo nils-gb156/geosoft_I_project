@@ -1,8 +1,9 @@
-"use-strict"
+"use strict"
 
 const routePlanningMap = L.map('map-routes').setView([51, 10], 6);
 let routeLayer;
 let previousSelectedNames = new Set();
+
 
 
 /**
@@ -33,17 +34,47 @@ async function loadStationsOnMap() {
     const selectedStations = stations.filter(station => selectedNames.includes(station.name));
 
     // GeoJSON Layer erstellen
-    routeLayer = L.layerGroup(); // leere Gruppe
+    routeLayer = L.layerGroup();
 
-    selectedStations.forEach(station => {
-      if (station.geojson) {
+    // Reihenfolge wie angeklickt (selectionOrder), gefiltert auf aktuell ausgewählt
+    const orderedNames = selectionOrder.filter(name => selectedNames.includes(name));
+    const nameToIndex = new Map(orderedNames.map((n, i) => [n, i]));
+    const byName = new Map(stations.map(s => [s.name, s]));
+
+    const popupHtml = (name, description) => {
+      const i = nameToIndex.get(name);
+      const num = (i !== undefined) ? (i + 1) : '?';
+      return `<div>
+    <div style="font-weight:700;font-size:14px">#${num}</div>
+    <div><b>${name}</b></div>
+    ${description ? `<div>${description}</div>` : ``}
+  </div>`;
+    };
+
+    // Marker/Layer in der Reihenfolge zeichnen
+    orderedNames.forEach(name => {
+      const station = byName.get(name);
+      if (!station || !station.geojson) return;
+
+      const f0 = station.geojson?.features?.[0];
+
+      if (f0?.geometry?.type === "Point") {
+        // Punkt-Geometrien als Marker mit Popup (#N oben)
+        L.geoJSON(station.geojson, {
+          pointToLayer: (_feature, latlng) => L.marker(latlng)
+        })
+          .bindPopup(popupHtml(station.name, station.description))
+          .addTo(routeLayer);
+      } else {
+        // Nicht-Punkt-Geometrien (optional) ebenfalls mit Popup
         L.geoJSON(station.geojson)
-          .bindPopup(`<b>${station.name}</b><br>${station.description}`)
+          .bindPopup(popupHtml(station.name, station.description))
           .addTo(routeLayer);
       }
     });
 
     routeLayer.addTo(routePlanningMap);
+
 
     // Route aktualisieren/entfernen, falls Marker entfernt werden 
     const waypoints = buildWaypointsFromChecked();
@@ -66,7 +97,6 @@ async function loadStationsOnMap() {
   }
 }
 
-document.getElementById("select-all").addEventListener("change", loadStationsOnMap);
 
 // --- Custom Router für Leaflet Routing Machine (spricht mit Backend /route-bike) ---
 const orsProxyRouter = {
@@ -133,12 +163,8 @@ let routeControl = null;
 
 // --- Funktion zum Erstellen der Fahrradroute aus ausgewählten Stationen ---
 function createBikeRouteFromSelectedStations() {
-  const checked = document.querySelectorAll("#stations-table-body input[type='checkbox']:checked");
-  const waypoints = Array.from(checked).map(cb => {
-    const lat = parseFloat(cb.dataset.lat);
-    const lng = parseFloat(cb.dataset.lng);
-    return (!isNaN(lat) && !isNaN(lng)) ? L.Routing.waypoint(L.latLng(lat, lng)) : null;
-  }).filter(Boolean);
+  
+  const waypoints = buildWaypointsFromChecked();
 
   if (waypoints.length < 2) {
     alert("Mindestens zwei Stationen wählen.");
