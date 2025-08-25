@@ -1,6 +1,6 @@
 "use strict"
 
-const routePlanningMap = L.map('map-routes').setView([51, 10], 6);
+window.routePlanningMap = L.map('map-routes').setView([51, 10], 6);
 let routeLayer;
 let previousSelectedNames = new Set();
 
@@ -57,19 +57,31 @@ async function loadStationsOnMap() {
       if (!station || !station.geojson) return;
 
       const f0 = station.geojson?.features?.[0];
+      const c = bboxCenterOfGeometry(f0.geometry);
 
       if (f0?.geometry?.type === "Point") {
-        // Punkt-Geometrien als Marker mit Popup (#N oben)
+        // Punkt-Geometrien als Marker mit Popup
         L.geoJSON(station.geojson, {
           pointToLayer: (_feature, latlng) => L.marker(latlng)
         })
           .bindPopup(popupHtml(station.name, station.description))
           .addTo(routeLayer);
-      } else {
-        // Nicht-Punkt-Geometrien (optional) ebenfalls mit Popup
+      } else if (f0 && f0.geometry) {
+        // Polygone auf die Karte zeichnen 
         L.geoJSON(station.geojson)
           .bindPopup(popupHtml(station.name, station.description))
           .addTo(routeLayer);
+
+        // ... und einen Marker am Mittelpunkt der BoundingBox setzen
+        const c = bboxCenterOfGeometry(f0.geometry); 
+        if (c) {
+          L.marker([c[1], c[0]])
+            .bindPopup(popupHtml(station.name, station.description))
+            .addTo(routeLayer);
+        }
+      } else {
+        // kein Geometry gefunden -> nichts zeichnen
+        console.warn('Station ohne Geometrie:', station.name);
       }
     });
 
@@ -89,7 +101,7 @@ async function loadStationsOnMap() {
         routeControl = null;
       }
     }
-    
+
     previousSelectedNames = new Set(selectedNames);
 
   } catch (error) {
@@ -163,7 +175,7 @@ let routeControl = null;
 
 // --- Funktion zum Erstellen der Fahrradroute aus ausgewählten Stationen ---
 function createBikeRouteFromSelectedStations() {
-  
+
   const waypoints = buildWaypointsFromChecked();
 
   if (waypoints.length < 2) {
@@ -177,8 +189,6 @@ function createBikeRouteFromSelectedStations() {
     routeControl = null;
   }
 
-
-
   // Routing-Control mit ORS-Router
   routeControl = L.Routing.control({
     waypoints,
@@ -190,7 +200,7 @@ function createBikeRouteFromSelectedStations() {
     addWaypoints: false,
     fitSelectedRoutes: true,
     show: false,
-    lineOptions: { styles: [{ weight: 5, opacity: 0.9 }] },
+    lineOptions: { styles: [{ weight: 5, opacity: 0.9}] },
     createMarker: () => null
   }).addTo(routePlanningMap);
 
