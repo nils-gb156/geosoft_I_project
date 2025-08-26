@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const pagesRouter = require('./routes/pages');
 const stationRouter = require('./routes/station');
-const orsRouter = require('./routes/route');
+const tourRouter = require('./routes/tour');
 
 const app = express();
 const mongo = require('./db/database');
@@ -18,7 +18,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', pagesRouter);
 app.use('/', stationRouter);
-app.use('/', orsRouter);
+app.use('/', tourRouter);
 app.use((req, res, next) => {
   res.status(404).send('Seite nicht gefunden');
 });
