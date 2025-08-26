@@ -1,16 +1,15 @@
 const express = require('express');
 const path = require('path');
 const router = express.Router();
-const db = require('../db/database');
 
 // Standardseite
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Routen-Verwaltungsseite
-router.get('/routen', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/route_administration.html'));
+// Touren-Verwaltungsseite
+router.get('/touren', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/tour_administration.html'));
 });
 
 // Stationen-Verwaltungsseite
