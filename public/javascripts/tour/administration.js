@@ -91,28 +91,6 @@ async function loadStations() {
 
         });
 
-        // Master-Checkbox steuert alle Zeilen
-        const selectAll = document.getElementById("select-all");
-        selectAll.addEventListener("change", () => {
-            const boxes = document.querySelectorAll(".station-checkbox");
-
-            if (selectAll.checked) {
-                boxes.forEach(cb => {
-                    if (!cb.checked) {
-                        cb.checked = true;
-                        if (!selectionOrder.includes(cb.value)) selectionOrder.push(cb.value);
-                    }
-                });
-            } else {
-                boxes.forEach(cb => { cb.checked = false; });
-                selectionOrder.length = 0; 
-            }
-
-
-            loadStationsOnMap();
-        });
-
-
     } catch (error) {
         console.error("Fehler beim Laden der Stationen:", error);
     }

@@ -173,8 +173,8 @@ const orsProxyRouter = {
 
 let routeControl = null;
 
-// --- Funktion zum Erstellen der Fahrradroute aus ausgewählten Stationen ---
-function createBikeRouteFromSelectedStations() {
+// --- Funktion zum Erstellen der Fahrradtour aus ausgewählten Stationen ---
+function createBikeTourFromSelectedStations() {
 
   const waypoints = buildWaypointsFromChecked();
 

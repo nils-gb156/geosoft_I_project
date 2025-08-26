@@ -28,7 +28,7 @@
     <script defer src="javascripts/tour/administration.js"></script>
 
     <link rel="stylesheet" href="/stylesheets/style.css">
-   
+
 
 </head>
 
@@ -60,16 +60,14 @@
 
     <main>
 
-         <div class="container mt-4" id="route-administration-">
-            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Stationen bearbeiten</h4>
+        <div class="container mt-4">
+            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Touren erstellen</h4>
+
+            <div id="map-routes" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
 
             <table class="table table-striped">
                 <thead>
-                    <tr>
-                        <th scope="col">
-                            <input class="form-check-input" type="checkbox" id="select-all" />
-                        </th>
-                        <th>Nummer</th>
+                        <th></th>
                         <th>Name</th>
                         <th>Beschreibung</th>
                     </tr>
@@ -77,17 +75,29 @@
                 <tbody id="stations-table-body"></tbody>
             </table>
 
+            <!-- Neues Eingabefeld um der Tour einen Namen/Nummer (Bsp. "Münsterlandtour") zu geben, bevor sie gespeichert wird -->
+
+            <button class="btn btn-primary mt-3" onclick="createBikeTourFromSelectedStations()">Tour berechnen</button>
+
+            <!-- Speichert die Toure (Route + Stationen) in MongoDB -->
+            <button class="btn btn-success mt-3">Tour speichern</button>
+
+            <!-- Bricht den Vorgang ab, also untickt alle ausgewählten Stationen und setzt Karte zurück -->
+            <button class="btn btn-danger mt-3">Abbrechen</button>
+
+
 
         </div>
 
-        <button class="btn btn-primary mt-3" onclick="createBikeRouteFromSelectedStations()">
-            Tour planen
-        </button>
 
-        <div class="container mt-4" id="route-adding">
-            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Touren planen</h4>
+        <div class="container mt-4">
+            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Touren bearbeiten</h4>
 
-            <div id="map-routes" class="mx-auto" style="height: 400px; width: 80%;"></div>
+            <!-- Hier Karte wo gespeicherte Touren angezeigt werden können. Also Die Route + die einzelnen Stationen, zusammen ist das dann eine Tour -->
+
+            <!-- Tabelle in der alle gespeicherten Touren mit Namen/Nummer angezeigt werden und dann in der Karte angezeigt, bearbeitet oder gelöscht werden können (über Buttons) -->
+
+            <!-- Kannst dich beim Design am besten an der Seite der Stationen orientieren -->
 
         </div>
 
