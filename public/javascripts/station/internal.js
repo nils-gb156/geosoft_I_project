@@ -53,6 +53,8 @@ document.getElementById("stations-table-body").addEventListener("click", (event)
         saveStation(station)
     } else if (action === "cancel") {
         cancelStation(station)
+    } else if (action === "download") {
+        downloadStation(station)
     }
 });
 
@@ -73,7 +75,8 @@ async function loadStations() {
                 <td>${station.name}</td>
                 <td>${station.description}</td>
                 <td><a href="${station.url}" target="_blank">${station.url}</a></td>
-                <td class="text-center"><img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;"></td>   
+                <td class="text-center"><img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;"></td>
+                <td class="text-center"><img src="images/download.png" alt="Herunterladen" data-action="download" style="height: 25px; cursor: pointer;"></td>
                 <td class="text-center"><img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="height: 25px; cursor: pointer;"></td>
                 <td class="text-center"><img src="images/delete.png" alt="Löschen" data-action="delete" style="height: 25px; cursor: pointer;"></td>
             `;

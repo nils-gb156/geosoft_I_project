@@ -13,8 +13,9 @@ async function editStation(station) {
 
     // Buttons nur für diese Zeile umwandeln
     row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
-    row.querySelector("td:nth-child(5)").innerHTML = '<img src="images/save.png" alt="Speichern" data-action="save" style="height: 25px; cursor: pointer;">';
-    row.querySelector("td:nth-child(6)").innerHTML = '<img src="images/cancel.png" alt="Abbrechen" data-action="cancel" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(5)").innerHTML = '<img src="images/download.png" alt="Herunterladen" data-action="download" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(6)").innerHTML = '<img src="images/save.png" alt="Speichern" data-action="save" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(7)").innerHTML = '<img src="images/cancel.png" alt="Abbrechen" data-action="cancel" style="height: 25px; cursor: pointer;">';
 
 
     // Zellen in Input-Felder umwandeln
@@ -80,13 +81,11 @@ async function saveStation(station) {
         row.querySelector("td:nth-child(2)").textContent = newDescription;
         row.querySelector("td:nth-child(3)").innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
 
-        // Buttons wiederherstellen: View / Edit / Delete
-        row.querySelector("td:nth-child(4)").innerHTML =
-            '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
-        row.querySelector("td:nth-child(5)").innerHTML =
-            '<img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="height: 25px; cursor: pointer;">';
-        row.querySelector("td:nth-child(6)").innerHTML =
-            '<img src="images/delete.png" alt="Löschen" data-action="delete" style="height: 25px; cursor: pointer;">';
+        // Buttons wiederherstellen
+        row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
+        row.querySelector("td:nth-child(5)").innerHTML = '<img src="images/download.png" alt="Herunterladen" data-action="download" style="height: 25px; cursor: pointer;">';
+        row.querySelector("td:nth-child(6)").innerHTML = '<img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="height: 25px; cursor: pointer;">';
+        row.querySelector("td:nth-child(7)").innerHTML = '<img src="images/delete.png" alt="Löschen" data-action="delete" style="height: 25px; cursor: pointer;">';
 
         // Aktualisiere das station-Objekt im dataset
         row.dataset.station = JSON.stringify({
@@ -119,13 +118,11 @@ function cancelStation(station) {
     row.querySelector("td:nth-child(2)").textContent = station.description;
     row.querySelector("td:nth-child(3)").innerHTML = `<a href="${station.url}" target="_blank">${station.url}</a>`;
 
-    // Buttons wiederherstellen: View / Edit / Delete
-    row.querySelector("td:nth-child(4)").innerHTML =
-        '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
-    row.querySelector("td:nth-child(5)").innerHTML =
-        '<img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="height: 25px; cursor: pointer;">';
-    row.querySelector("td:nth-child(6)").innerHTML =
-        '<img src="images/delete.png" alt="Löschen" data-action="delete" style="height: 25px; cursor: pointer;">';
+    // Buttons wiederherstellen
+    row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(5)").innerHTML = '<img src="images/download.png" alt="Herunterladen" data-action="download" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(6)").innerHTML = '<img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="height: 25px; cursor: pointer;">';
+    row.querySelector("td:nth-child(7)").innerHTML = '<img src="images/delete.png" alt="Löschen" data-action="delete" style="height: 25px; cursor: pointer;">';
 
     // Dataset wiederherstellen
     row.dataset.station = JSON.stringify(station);
