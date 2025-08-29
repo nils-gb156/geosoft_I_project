@@ -26,6 +26,7 @@
     <script defer src="javascripts/station/create/fileupload.js"></script>
     <script defer src="javascripts/station/create/mapdraw.js"></script>
     <script defer src="javascripts/station/create/textfield.js"></script>
+    <script defer src="javascripts/station/create/geocode.js"></script>
     <script defer src="javascripts/station/show.js"></script>
     <script defer src="javascripts/station/edit.js"></script>
     <script defer src="javascripts/station/delete.js"></script>
@@ -101,6 +102,10 @@
                 <li class="nav-item">
                     <a id="textfield-nav" class="nav-link text-dark" href="#"
                         onclick="changeRider(event, 'textfield')">Textfeld</a>
+                </li>
+                <li class="nav-item">
+                    <a id="geocode-nav" class="nav-link text-dark" href="#"
+                        onclick="changeRider(event, 'geocode')">Geocodierung</a>
                 </li>
             </ul>
 
@@ -259,6 +264,66 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <button class="btn btn-primary" type="button" onclick="addRouteFromTextfield()">
+                                        Station hinzufügen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="geocode" class="container" style="display: none;">
+                <br>
+                <div class="row justify-content-center mb-4">
+
+                    <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
+                        <div id="map-geocode" style="height: 350px; width: 80%;"></div>
+                    </div>
+
+
+                    <div class="col-12 col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">Adresse</span>
+                                    <input id="geocode-station-address" type="text" class="form-control" aria-label="Adresse">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">Name</span>
+                                    <input id="geocode-station-name" type="text" class="form-control" aria-label="Name">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">Beschreibung</span>
+                                    <input id="geocode-station-description" type="text" class="form-control"
+                                        aria-label="Beschreibung">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="width: 140px;">URL</span>
+                                    <input id="geocode-station-url" type="text" class="form-control" aria-label="URL">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <button class="btn btn-primary" type="button" onclick="addStationFromGeocode()">
                                         Station hinzufügen
                                     </button>
                                 </div>
