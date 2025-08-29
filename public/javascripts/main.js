@@ -12,11 +12,13 @@ function changeRider(event, tab) {
     document.getElementById("fileupload").style.display = "none";
     document.getElementById("mapdraw").style.display = "none";
     document.getElementById("textfield").style.display = "none";
+    document.getElementById("geocode").style.display = "none";
 
     // Alle Tabs deaktivieren
     document.getElementById("fileupload-nav").className = "nav-link text-dark";
     document.getElementById("mapdraw-nav").className = "nav-link text-dark";
     document.getElementById("textfield-nav").className = "nav-link text-dark";
+    document.getElementById("geocode-nav").className = "nav-link text-dark";
 
     // Gewählten Container anzeigen
     document.getElementById(tab).style.display = "block";
@@ -37,6 +39,11 @@ function changeRider(event, tab) {
         }, 200);
     }
 
+    if (tab === "geocode" && geocodeMap) {
+        setTimeout(() => {
+            geocodeMap.invalidateSize();
+        }, 200);
+    }
 
 }
 
