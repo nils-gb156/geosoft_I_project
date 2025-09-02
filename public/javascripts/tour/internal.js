@@ -4,7 +4,6 @@ loadStations();
 
 let selectionOrder = []; // Reihenfolge der angehakten Stationen
 
-
 /**
  * Läd alle Stationen aus MongoDB und stellt sie in der Tabelle dar.
  */
