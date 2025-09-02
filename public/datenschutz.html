@@ -53,7 +53,7 @@
                         <h5>1. Erhebung und Speicherung personenbezogener Daten</h5>
                         <p>
                             Es werden durch diese Website keine personenbezogenen Daten gespeichert oder verarbeitet.
-                            Die Anwendung ruft lediglich Wetter- und Kartendaten über externe APIs ab, ohne
+                            Die Anwendung ruft lediglich Routing-Informationen und Adressdaten über externe APIs ab, ohne
                             Nutzeridentitäten zu erfassen.
                         </p>
                     </div>
@@ -64,14 +64,23 @@
                         </p>
                         <ul>
                             <li>
-                                <strong>OpenMeteoAPI:</strong> Wetterdaten werden über die öffentliche API von
-                                <a href="https://open-meteo.com" target="_blank">open-meteo.com</a> eingebunden.
-                            </li>
-                            <li>
                                 <strong>OpenStreetMap (Leaflet):</strong> Kartendaten werden über LeafletJS und
                                 OSM-Tiles geladen.
                                 Weitere Informationen unter <a href="https://www.openstreetmap.org/about"
                                     target="_blank">openstreetmap.org/about</a>.
+                            </li>
+                            <li>
+                                <strong>Nominatim Adresssuche:</strong> Für die Adresssuche wird der externe Dienst Nominatim genutzt. 
+                                Dabei werden Suchanfragen an die Server von Nominatim gesendet, um Adressvorschläge und Geokoordinaten zu erhalten.
+                            Weitere Informationen unter <a href="https://nominatim.org"
+                                    target="_blank">https://nominatim.org</a>.
+                            </li>
+                            <li>
+                                <strong>Openrouteservice:</strong> Für die automatische Routenberechnung zwischen den Stationen 
+                                wird der externe Dienst Openrouteservice verwendet. 
+                                Dabei werden die ausgewählten Stationen und Routinganfragen an die Server von Openrouteservice gesendet, um passende Fahrradrouten zu erhalten.
+                                Weitere Informationen unter <a href="https://openrouteservice.org"
+                                    target="_blank">https://openrouteservice.org</a>.
                             </li>
                         </ul>
                         <p>
@@ -97,9 +106,8 @@
                     <div class="mb-4">
                         <h5>5. Zweck der Website</h5>
                         <p>
-                            Die Anwendung dient ausschließlich der Visualisierung von Routen- und Wetterdaten im Rahmen
-                            eines
-                            universitären Lehrprojekts. Eine kommerzielle Nutzung ist ausgeschlossen.
+                            Die Anwendung dient ausschließlich der Visualisierung und Verwaltung von Stationen und Fahrradrouten 
+                            im Rahmen eines universitären Lehrprojekts. Eine kommerzielle Nutzung oder Weitergabe der Daten findet nicht statt.
                         </p>
                     </div>
                 </div>
