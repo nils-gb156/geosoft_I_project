@@ -23,9 +23,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
 
-    <script defer src="javascripts/tour/routeplanning.js"></script>
     <script defer src="javascripts/main.js"></script>
-    <script defer src="javascripts/tour/administration.js"></script>
+    <script defer src="javascripts/tour/internal.js"></script>
+    <script defer src="javascripts/tour/create.js"></script>
+    <script defer src="javascripts/tour/edit.js"></script>
 
     <link rel="stylesheet" href="/stylesheets/style.css">
 
@@ -63,27 +64,47 @@
         <div class="container mt-4">
             <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Touren erstellen</h4>
 
-            <div id="map-routes" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
+            <div id="create-tour-map" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
 
             <table class="table table-striped">
                 <thead>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Beschreibung</th>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Beschreibung</th>
                     </tr>
                 </thead>
                 <tbody id="stations-table-body"></tbody>
             </table>
 
-            <!-- Neues Eingabefeld um der Tour einen Namen/Nummer (Bsp. "Münsterlandtour") zu geben, bevor sie gespeichert wird -->
+            <div class="col-12 col-md-6">
+                
+                    <!-- Eingabefeld um der Tour einen Namen (Bsp. "Münsterlandtour") zu geben, bevor sie gespeichert wird -->
+                    <div class="col-12 col-md-10">
+                        <div class="input-group">
+                            <span class="input-group-text" style="width: 140px;">Name</span>
+                            <input id="tour-name" type="text" class="form-control" aria-label="Name">
+                        </div>
+                    </div>
+                    <!-- Möglichkeit die Tour als Rundtour zuplanen (Start- und Endpunkt sind identisch) -->
+                    <div class="col-12 col-md-12 d-flex align-items-center mt-3 mt-md-0">
+                        <input class="form-check-input me-2" type="checkbox" value="" id="check-roundtour">
+                        <label class="form-check-label" for="check-roundtour">
+                            Tour als Rundtour planen (Start- und Endpunkt sind identisch)
+                        </label>
+                    </div>
+               
+            </div>
 
-            <button class="btn btn-primary mt-3" onclick="createBikeTourFromSelectedStations()">Tour berechnen</button>
+            <div class="d-grid gap-2 d-md-flex mt-3">
+                 <!-- Berechnet die Route -->
+                <button class="btn btn-primary" onclick="createBikeTourFromSelectedStations()">Tour berechnen</button>
 
-            <!-- Speichert die Toure (Route + Stationen) in MongoDB -->
-            <button class="btn btn-success mt-3">Tour speichern</button>
+                <!-- Speichert die Tour (Routen + Stationen) in MongoDB -->
+                <button class="btn btn-success" onclick="saveTour()">Tour speichern</button>
 
-            <!-- Bricht den Vorgang ab, also untickt alle ausgewählten Stationen und setzt Karte zurück -->
-            <button class="btn btn-danger mt-3">Abbrechen</button>
+                <!-- Bricht den Vorgang ab, also untickt alle ausgewählten Stationen und setzt Karte zurück -->
+                <button class="btn btn-danger" onclick="cancelTourCreation()">Abbrechen</button>
+            </div>
 
 
 
