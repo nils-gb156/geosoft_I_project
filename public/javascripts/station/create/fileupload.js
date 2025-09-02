@@ -1,13 +1,13 @@
 "use-strict"
 
 const fileuploadMap = L.map('map-fileupload').setView([51, 10], 6);
-let routeLayer;
+let stationLayer;
 
 /**
- * Ausgewähltes GeoJSON Feature wird in MongoDB gespeichert.
+ * Ausgewähltes GeoJSON Feature wird als Station in MongoDB gespeichert.
  */
-async function addRouteFromInput() {
-    const input = document.getElementById("geojson-route-input");
+async function addStationFromInput() {
+    const input = document.getElementById("geojson-station-input");
     const file = input.files[0];
     const name = document.getElementById("fileupload-station-name").value;
     let description = document.getElementById("fileupload-station-description").value;
@@ -80,9 +80,9 @@ async function addRouteFromInput() {
             alert("Station erfolgreich gespeichert")
 
             // Felder zurücksetzen
-            routeLayer.clearLayers();
+            stationLayer.clearLayers();
             fileuploadMap.setView([51, 10], 6);
-            document.getElementById("geojson-route-input").value = null
+            document.getElementById("geojson-station-input").value = null
             document.getElementById("fileupload-station-name").value = null;
             document.getElementById("fileupload-station-description").value = null;
             document.getElementById("fileupload-station-url").value = null;
@@ -107,10 +107,10 @@ function initMapFileInput() {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(fileuploadMap);
 
-    // Route hinzufügen, sobald sie geladen wird
-    routeLayer = L.geoJSON().addTo(fileuploadMap);
+    // Station hinzufügen, sobald sie geladen wird
+    stationLayer = L.geoJSON().addTo(fileuploadMap);
 
-    document.getElementById("geojson-route-input").addEventListener('change', function () {
+    document.getElementById("geojson-station-input").addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
 
@@ -125,10 +125,10 @@ function initMapFileInput() {
                     return;
                 }
 
-                // Vorherige Route entfernen und neue hinzufügen
-                routeLayer.clearLayers();
-                routeLayer.addData(geojson);
-                fileuploadMap.fitBounds(routeLayer.getBounds());
+                // Vorherige Station entfernen und neue hinzufügen
+                stationLayer.clearLayers();
+                stationLayer.addData(geojson);
+                fileuploadMap.fitBounds(stationLayer.getBounds());
 
             } catch (error) {
                 console.error("Fehler beim Parsen:", error);

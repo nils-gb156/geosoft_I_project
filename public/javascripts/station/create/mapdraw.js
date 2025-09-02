@@ -47,9 +47,9 @@ function initMapDrawStations() {
 }
 
 /**
- * Aktueller GeoJSON Station Layer wird als .geojson in MongoDB gepseichert.
+ * Aktueller GeoJSON Station Layer wird als .geojson Station in MongoDB gespeichert.
  */
-async function addRouteFromDraw() {
+async function addStationFromDraw() {
     const geojson = drawnStation.toGeoJSON();
     const name = document.getElementById("draw-station-name").value;
     let description = document.getElementById("draw-station-description").value;

@@ -19,7 +19,7 @@
 
 <body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-lg" style="background-color: #e2e2e2;">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
                 <a class="navbar-brand" href="/">
                     <img src="/images/favicon.png" alt="Logo" width="24" height="24" style="margin-right: 8px;">
@@ -32,10 +32,10 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link" href="/touren">Touren-Verwaltung</a>
+                            <a class="nav-link" href="/touren">Tour-Verwaltung</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/stationen">Stationen-Verwaltung</a>
+                            <a class="nav-link" href="/stationen">Stations-Verwaltung</a>
                         </li>
                     </ul>
                 </div>
@@ -53,7 +53,7 @@
                         <h5>1. Erhebung und Speicherung personenbezogener Daten</h5>
                         <p>
                             Es werden durch diese Website keine personenbezogenen Daten gespeichert oder verarbeitet.
-                            Die Anwendung ruft lediglich Wetter- und Kartendaten über externe APIs ab, ohne
+                            Die Anwendung ruft lediglich Routing-Informationen und Adressdaten über externe APIs ab, ohne
                             Nutzeridentitäten zu erfassen.
                         </p>
                     </div>
@@ -64,14 +64,23 @@
                         </p>
                         <ul>
                             <li>
-                                <strong>OpenMeteoAPI:</strong> Wetterdaten werden über die öffentliche API von
-                                <a href="https://open-meteo.com" target="_blank">open-meteo.com</a> eingebunden.
-                            </li>
-                            <li>
                                 <strong>OpenStreetMap (Leaflet):</strong> Kartendaten werden über LeafletJS und
                                 OSM-Tiles geladen.
                                 Weitere Informationen unter <a href="https://www.openstreetmap.org/about"
                                     target="_blank">openstreetmap.org/about</a>.
+                            </li>
+                            <li>
+                                <strong>Nominatim Adresssuche:</strong> Für die Adresssuche wird der externe Dienst Nominatim genutzt. 
+                                Dabei werden Suchanfragen an die Server von Nominatim gesendet, um Adressvorschläge und Geokoordinaten zu erhalten.
+                            Weitere Informationen unter <a href="https://nominatim.org"
+                                    target="_blank">https://nominatim.org</a>.
+                            </li>
+                            <li>
+                                <strong>Openrouteservice:</strong> Für die automatische Routenberechnung zwischen den Stationen 
+                                wird der externe Dienst Openrouteservice verwendet. 
+                                Dabei werden die ausgewählten Stationen und Routinganfragen an die Server von Openrouteservice gesendet, um passende Fahrradrouten zu erhalten.
+                                Weitere Informationen unter <a href="https://openrouteservice.org"
+                                    target="_blank">https://openrouteservice.org</a>.
                             </li>
                         </ul>
                         <p>
@@ -97,9 +106,8 @@
                     <div class="mb-4">
                         <h5>5. Zweck der Website</h5>
                         <p>
-                            Die Anwendung dient ausschließlich der Visualisierung von Routen- und Wetterdaten im Rahmen
-                            eines
-                            universitären Lehrprojekts. Eine kommerzielle Nutzung ist ausgeschlossen.
+                            Die Anwendung dient ausschließlich der Visualisierung und Verwaltung von Stationen und Fahrradrouten 
+                            im Rahmen eines universitären Lehrprojekts. Eine kommerzielle Nutzung oder Weitergabe der Daten findet nicht statt.
                         </p>
                     </div>
                 </div>
@@ -107,7 +115,7 @@
         </div>
     </main>
 
-    <footer class="mt-auto py-2" style="background-color: #e2e2e2;">
+    <footer class="mt-auto py-2">
         <div class="container">
             <div class="row align-items-center text-center text-lg-start">
                 <div class="col-12 col-lg-6 mb-2 mb-lg-0">

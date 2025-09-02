@@ -1,6 +1,7 @@
 "use strict"
 
-window.routePlanningMap = L.map('map-routes').setView([51, 10], 6);
+const routePlanningMap = L.map('create-tour-map').setView([51, 10], 6);
+window.routePlanningMap = routePlanningMap;
 let routeLayer;
 let previousSelectedNames = new Set();
 
@@ -9,7 +10,7 @@ let previousSelectedNames = new Set();
 /**
  * Initialisiert die Karte beim Laden der Webseite.
  */
-function initMapFileInput() {
+function initMapCreateTour() {
 
   // OSM
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -211,7 +212,21 @@ function createBikeTourFromSelectedStations() {
 
 // Warte bis das HTML-Element existiert
 document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("map-routes")) {
-    initMapFileInput();
+  if (document.getElementById("create-tour-map")) {
+    initMapCreateTour();
   }
 })
+
+/**
+ * Speichert die berechnete Tour (Stationen und Routen zwischen den Stationen) in MongoDB.
+ */
+function saveTour() {
+
+}
+
+/**
+ * Bricht die Erstellung der Tour ab und setzt alle Änderungen zurück. 
+ */
+function cancelTourCreation() {
+
+}
