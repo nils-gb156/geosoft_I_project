@@ -115,10 +115,21 @@
             <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Touren bearbeiten</h4>
 
             <!-- Hier Karte wo gespeicherte Touren angezeigt werden können. Also Die Route + die einzelnen Stationen, zusammen ist das dann eine Tour -->
+            <div id="edit-tour-map" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
 
             <!-- Tabelle in der alle gespeicherten Touren mit Namen/Nummer angezeigt werden und dann in der Karte angezeigt, bearbeitet oder gelöscht werden können (über Buttons) -->
-
-            <!-- Kannst dich beim Design am besten an der Seite der Stationen orientieren -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th></th> <!-- Button zum Anzeigen auf der Karte-->
+                        <th></th> <!-- Button zum Bearbeiten-->
+                        <th></th> <!-- Button zum Löschen-->
+                    </tr>
+                </thead>
+                <tbody id="tour-table-body"></tbody>
+                <!-- Das befüllen der Tabelle funktioniert genau so wie bei den Stationen oben auf der Seite Stations-Verwaltung-->
+            </table>
 
         </div>
 
