@@ -9,3 +9,11 @@ footer {
   bottom: 0;
   z-index: 1000;
 } 
+
+header nav.navbar {
+  background-color: #e2e2e2;
+}
+
+footer {
+  background-color: #e2e2e2;
+}
