@@ -1,9 +1,9 @@
 "use strict"
 
 /**
- * Aktuelles GeoJSON Station Feature wird als .geojson in MongoDB gepseichert.
+ * Aktuelles GeoJSON Station Feature wird als .geojson Station in MongoDB gespeichert.
  */
-async function addRouteFromTextfield() {
+async function addStationFromTextfield() {
     const geojsonText = document.getElementById("geojson-station-textfield").value;
     const name = document.getElementById("textfield-station-name").value;
     let description = document.getElementById("textfield-station-description").value;
