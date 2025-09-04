@@ -23,11 +23,12 @@ Sie wurde im Rahmen eines universitären Lehrprojekts am Institut für Geoinform
 
 1. Repository klonen oder herunterladen.
 2. Stelle sicher, dass [Docker](https://www.docker.com/) installiert ist.
-3. Im Projektordner die Container bauen und starten:
+3. Im Projektordner den Container bauen und starten:
+    Beim ersten Mal den ganzen Container bauen:
     ```
     docker-compose up --build
     ```
-    Alternativ ohne Neu-Build:
+    Ansonsten nur die Anwendung starten:
     ```
     docker-compose up -d
     ```
@@ -35,11 +36,15 @@ Sie wurde im Rahmen eines universitären Lehrprojekts am Institut für Geoinform
     ```
     docker-compose down
     ```
-5. Logs der Anwendung anzeigen:
+5. Datenbank leeren:
+    ```
+    docker-compose down -v
+    ```
+6. Logs der Anwendung anzeigen:
     ```
     docker-compose logs
     ```
-6. Die Webseite ist erreichbar unter:  
+7. Die Webseite ist erreichbar unter:  
    [http://localhost:4000](http://localhost:4000)
 
 **Hinweis:**  
