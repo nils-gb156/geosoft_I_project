@@ -45,6 +45,8 @@ document.getElementById("stations-table-body").addEventListener("click", (event)
 
     if (action === "view") {
         showStationOnMap(station);
+        // Nach ganz oben scrollen, damit die Karte sichtbar ist
+        window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (action === "delete") {
         deleteStation(station.name);
     } else if (action === "edit") {
