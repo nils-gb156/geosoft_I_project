@@ -1,4 +1,3 @@
-version: '3'
 services:
   appservice:
     container_name: geosoftware_1_uebung
