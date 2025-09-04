@@ -1,0 +1,38 @@
+services:
+  appservice:
+    container_name: geosoftware_1_uebung
+    build: .
+    ports:
+      - '4000:3000'
+    depends_on:
+      - mongoservice
+    environment:
+      - MONGO_URI=mongodb://mongoservice:27017/deinedb
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev # Use 'npm start' for production
+
+  mongoservice:
+    container_name: mongo
+    image: mongo:6
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db # Persist data
+      - ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+
+  mongoexpressservice:
+    image: mongo-express
+    restart: always
+    ports:
+      - '8081:8081'
+    depends_on:
+      - mongoservice
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongoservice
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+
+volumes:
+  mongo-data:

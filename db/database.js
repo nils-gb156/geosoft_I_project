@@ -1,6 +1,6 @@
 const { MongoClient } = require("mongodb")
 
-const url = "mongodb://localhost:27017"  // "mongodb://mongo:27017" für dockernutzung
+const url = "mongodb://mongo:27017"
 const client = new MongoClient(url)
 const dbName = "geosoftware_I"
 const collectionName = "stations"

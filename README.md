@@ -18,19 +18,38 @@ Sie wurde im Rahmen eines universitären Lehrprojekts am Institut für Geoinform
 - **Responsives Design:**  
   Die Anwendung ist für PC, Tablet und Smartphone optimiert.
 
-## Installation & Start
+
+## Installation & Start (Docker)
 
 1. Repository klonen oder herunterladen.
-2. Im Projektordner die Abhängigkeiten installieren:
+2. Stelle sicher, dass [Docker](https://www.docker.com/) installiert ist.
+3. Im Projektordner den Container bauen und starten:
+    Beim ersten Mal den ganzen Container bauen:
     ```
-    npm install
+    docker-compose up --build
     ```
-3. Die Anwendung starten:
+    Ansonsten nur die Anwendung starten:
     ```
-    npm start
+    docker-compose up -d
     ```
-4. Die Webseite ist erreichbar unter:  
-   [http://localhost:3000](http://localhost:3000)
+4. Die Anwendung stoppen:
+    ```
+    docker-compose down
+    ```
+5. Datenbank leeren:
+    ```
+    docker-compose down -v
+    ```
+6. Logs der Anwendung anzeigen:
+    ```
+    docker-compose logs
+    ```
+7. Die Webseite ist erreichbar unter:  
+   [http://localhost:4000](http://localhost:4000)
+
+**Hinweis:**  
+- Die MongoDB ist unter Port `27017` erreichbar.  
+- Das Admin-Interface [mongo-express](https://github.com/mongo-express/mongo-express) ist unter [http://localhost:8081](http://localhost:8081) verfügbar.
 
 ## Verzeichnisstruktur
 
@@ -44,4 +63,4 @@ Sie wurde im Rahmen eines universitären Lehrprojekts am Institut für Geoinform
 
 ---
 
-© 2025 Universität Münster – Institut für
+© 2025 Universität Münster – Institut für Geoinformatik
