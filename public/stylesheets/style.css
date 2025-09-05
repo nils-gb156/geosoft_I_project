@@ -1,7 +1,8 @@
+/* Sticky Header und Footer */
 header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2000;
 } 
 
 footer {
@@ -10,10 +11,121 @@ footer {
   z-index: 1000;
 } 
 
+/* Hintergrundfarben */
 header nav.navbar {
-  background-color: #e2e2e2;
+  background-color: #A5D6A7;
 }
 
 footer {
-  background-color: #e2e2e2;
+  background-color: #A5D6A7;
+}
+
+body {
+  background-color: #F9FBF7;
+}
+
+/* Nav-Tabs Hintergrundfarbe */
+.nav-tabs .nav-link {
+  background-color: #F9FBF7;
+  color: #333;
+  border: 1px solid #A5D6A7;
+}
+
+.nav-tabs .nav-link:hover {
+  background-color: #F9FBF7;
+  color: #333;
+  border: 1px solid #388E3C;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #A5D6A7;
+  color: #222;
+  border: 1px solid #388E3C;
+}
+
+/* Spans */
+span {
+  background-color: #A5D6A7 !important;
+  border-color: #A5D6A7 !important;
+}
+
+/* Karten */
+.leaflet-control-zoom span {
+  background-color: white !important;
+}
+
+.leaflet-container {
+  border: 2px solid #A5D6A7 !important;
+}
+
+.leaflet-draw-tooltip span {
+  background-color: #ffffff !important;
+  color: #000000 !important;      
+}
+
+/* Input */
+input {
+  border-color: #A5D6A7 !important;
+}
+
+/* Textarea */
+textarea {
+  border-color: #A5D6A7 !important;
+}
+
+.form-control[type='file']::file-selector-button {
+   background-color: #A5D6A7 !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #26A69A   !important;
+  border: 2px solid #26A69A   !important;
+  color: black !important;
+}
+
+.btn-success {
+  background-color: #A5D6A7 !important;
+border: 2px solid #A5D6A7 !important;
+  color: black !important;
+}
+
+.btn-danger {
+  background-color: #E53935 !important;
+  border: 2px solid #E53935 !important;
+  color: black !important;
+}
+
+/* checkbox */
+.form-check-input {
+  border-color: #A5D6A7 !important;
+}
+.form-check-input:checked {
+  background-color: #388E3C !important;
+  border-color: #388E3C !important;
+}
+
+/* Tabelle */
+th {
+  background-color: #A5D6A7 !important;
+  color: #222;
+}
+
+table tr:nth-of-type(even) td {
+  background-color: #F9FBF7 !important;
+}
+
+table, table th, table td {
+  border-color: #A5D6A7 !important;
+}
+
+/* Card */
+.card {
+  background-color: #F9FBF7 !important;
+  border-color: #A5D6A7 !important;
+}
+
+/* Linie unter Überschrift */
+.border-bottom {
+  border-bottom-color: #A5D6A7 !important;
 }

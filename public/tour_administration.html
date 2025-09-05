@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Routen | Geosoft I</title>
+    <title>Touren | Geosoft I</title>
     <link rel="icon" type="image/x-icon" href="/images/favicon.png">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -61,12 +61,60 @@
 
     <main>
 
-        <div class="container mt-4">
+
+        <div class="container mt-4" id="tour-creation">
             <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Touren erstellen</h4>
 
-            <div id="create-tour-map" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
+            <div class="row justify-content-center mb-4">
+                <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
+                    <div id="create-tour-map" class="mx-auto" style="height: 350px; width: 90%;"></div><br>
+                </div>
 
-            <table class="table table-striped">
+                <div class="col-12 col-md-6">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <span class="input-group-text" style="width: 140px;">Name</span>
+                                <input id="tour-name" type="text" class="form-control" aria-label="Name">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12 d-flex align-items-center">
+                            <input class="form-check-input me-2" type="checkbox" value="" id="check-roundtour">
+                            <label class="form-check-label mb-0" for="check-roundtour">
+                                Tour als Rundtour planen (Start- und Endpunkt sind identisch)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <button class="btn btn-primary w-100"
+                                    onclick="createBikeTourFromSelectedStations()">Tour berechnen</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <button class="btn btn-success w-100 w-md-auto" onclick="saveTour()">Tour
+                                    speichern</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <button class="btn btn-danger w-100 w-md-auto"
+                                    onclick="cancelTourCreation()">Abbrechen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table">
                 <thead>
                     <th></th>
                     <th>Name</th>
@@ -76,49 +124,16 @@
                 <tbody id="stations-table-body"></tbody>
             </table>
 
-            <div class="col-12 col-md-6">
-                
-                    <!-- Eingabefeld um der Tour einen Namen (Bsp. "Münsterlandtour") zu geben, bevor sie gespeichert wird -->
-                    <div class="col-12 col-md-10">
-                        <div class="input-group">
-                            <span class="input-group-text" style="width: 140px;">Name</span>
-                            <input id="tour-name" type="text" class="form-control" aria-label="Name">
-                        </div>
-                    </div>
-                    <!-- Möglichkeit die Tour als Rundtour zuplanen (Start- und Endpunkt sind identisch) -->
-                    <div class="col-12 col-md-12 d-flex align-items-center mt-3 mt-md-0">
-                        <input class="form-check-input me-2" type="checkbox" value="" id="check-roundtour">
-                        <label class="form-check-label" for="check-roundtour">
-                            Tour als Rundtour planen (Start- und Endpunkt sind identisch)
-                        </label>
-                    </div>
-               
-            </div>
-
-            <div class="d-grid gap-2 d-md-flex mt-3">
-                 <!-- Berechnet die Route -->
-                <button class="btn btn-primary" onclick="createBikeTourFromSelectedStations()">Tour berechnen</button>
-
-                <!-- Speichert die Tour (Routen + Stationen) in MongoDB -->
-                <button class="btn btn-success" onclick="saveTour()">Tour speichern</button>
-
-                <!-- Bricht den Vorgang ab, also untickt alle ausgewählten Stationen und setzt Karte zurück -->
-                <button class="btn btn-danger" onclick="cancelTourCreation()">Abbrechen</button>
-            </div>
-
-
-
         </div>
 
-
-        <div class="container mt-4">
+        <div class="container mt-4" id="tour-editing">
             <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Touren bearbeiten</h4>
 
             <!-- Hier Karte wo gespeicherte Touren angezeigt werden können. Also Die Route + die einzelnen Stationen, zusammen ist das dann eine Tour -->
             <div id="edit-tour-map" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
 
             <!-- Tabelle in der alle gespeicherten Touren mit Namen/Nummer angezeigt werden und dann in der Karte angezeigt, bearbeitet oder gelöscht werden können (über Buttons) -->
-            <table class="table table-striped">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Name</th>
