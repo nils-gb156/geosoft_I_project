@@ -2,7 +2,7 @@
 header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2000;
 } 
 
 footer {
@@ -40,24 +40,36 @@ body {
 .nav-tabs .nav-link.active {
   background-color: #A5D6A7;
   color: #222;
-  border: 1px solid #A5D6A7;
+  border: 1px solid #388E3C;
+}
+
+/* Spans */
+span {
+  background-color: #A5D6A7 !important;
+  border-color: #A5D6A7 !important;
 }
 
 /* Karten */
 .leaflet-control-zoom span {
   background-color: white !important;
 }
+
 .leaflet-container {
   border: 2px solid #A5D6A7 !important;
 }
 
-span {
-  background-color: #A5D6A7 !important;
-  border-color: #A5D6A7 !important;
+.leaflet-draw-tooltip span {
+  background-color: #ffffff !important;
+  color: #000000 !important;      
 }
 
 /* Input */
 input {
+  border-color: #A5D6A7 !important;
+}
+
+/* Textarea */
+textarea {
   border-color: #A5D6A7 !important;
 }
 
