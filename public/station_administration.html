@@ -65,28 +65,6 @@
 
     <main>
 
-        <div class="container mt-4">
-            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Stationen bearbeiten</h4>
-
-            <div id="station-map" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
-
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Beschreibung</th>
-                        <th>URL</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="stations-table-body"></tbody>
-            </table>
-
-        </div>
-
         <div class="container mt-4" id="station-adding">
             <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Stationen hinzufügen</h4>
 
@@ -114,7 +92,7 @@
                 <div class="row justify-content-center mb-4">
 
                     <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
-                        <div id="map-fileupload" style="height: 350px; width: 80%;"></div>
+                        <div id="map-fileupload" style="height: 350px; width: 90%;"></div>
                     </div>
 
                     <div class="col-12 col-md-6">
@@ -158,11 +136,10 @@
 
                         <div class="row mb-3">
                             <div class="col-12">
-                                <div class="input-group">
-                                    
-                                    <button class="btn btn-primary" type="button" onclick="addStationFromInput()">
-                                        Station hinzufügen
-                                    </button>
+                                <div class="input-group">                                    
+                                        <button class="btn btn-primary w-100" type="button" onclick="addStationFromInput()">
+                                            Station hinzufügen
+                                        </button>
                                 </div>
                             </div>
                         </div>
@@ -175,7 +152,7 @@
                 <div class="row justify-content-center mb-4">
 
                     <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
-                        <div id="map-draw" style="height: 350px; width: 80%;"></div>
+                        <div id="map-draw" style="height: 350px; width: 90%;"></div>
                     </div>
 
 
@@ -211,7 +188,7 @@
                         <div class="row mb-3">
                             <div class="col-12">
                                 <div class="input-group">
-                                    <button class="btn btn-primary" type="button" onclick="addStationFromDraw()">
+                                    <button class="btn btn-primary  w-100" type="button" onclick="addStationFromDraw()">
                                         Station hinzufügen
                                     </button>
                                 </div>
@@ -227,7 +204,7 @@
 
                     <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
                         <textarea id="geojson-station-textfield" class="form-control"
-                            style="height: 350px; width: 80%; resize: vertical; text-align: left; vertical-align: top; box-sizing: border-box;"></textarea>
+                            style="height: 350px; width: 90%; resize: vertical; text-align: left; vertical-align: top; box-sizing: border-box;"></textarea>
                     </div>
 
                     <div class="col-12 col-md-6">
@@ -263,7 +240,7 @@
                         <div class="row mb-3">
                             <div class="col-12">
                                 <div class="input-group">
-                                    <button class="btn btn-primary" type="button" onclick="addStationFromTextfield()">
+                                    <button class="btn btn-primary  w-100" type="button" onclick="addStationFromTextfield()">
                                         Station hinzufügen
                                     </button>
                                 </div>
@@ -278,7 +255,7 @@
                 <div class="row justify-content-center mb-4">
 
                     <div class="col-12 col-md-6 d-flex justify-content-center mb-3 mb-md-0">
-                        <div id="map-geocode" style="height: 350px; width: 80%;"></div>
+                        <div id="map-geocode" style="height: 350px; width: 90%;"></div>
                     </div>
 
 
@@ -323,7 +300,7 @@
                         <div class="row mb-3">
                             <div class="col-12">
                                 <div class="input-group">
-                                    <button class="btn btn-primary" type="button" onclick="addStationFromGeocode()">
+                                    <button class="btn btn-primary w-100" type="button" onclick="addStationFromGeocode()">
                                         Station hinzufügen
                                     </button>
                                 </div>
@@ -332,6 +309,27 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="container mt-4" id="station-editing">
+            <h4 class="text-center fw-bold border-bottom pb-2 mb-4">Stationen bearbeiten</h4>
+
+            <div id="station-map" class="mx-auto" style="height: 350px; width: 70%;"></div><br>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Beschreibung</th>
+                        <th>URL</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="stations-table-body"></tbody>
+            </table>
         </div>
     </main>
 
