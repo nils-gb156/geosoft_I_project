@@ -63,19 +63,28 @@ async function loadStations() {
                     if (i !== -1) selectionOrder.splice(i, 1);
                 }
 
-                 loadStationsOnMap()
+                loadStationsOnMap();
 
-                
                 if (checked && window.routePlanningMap) {
                     // Bei Punkten
                     let lat = parseFloat(e.target.dataset.lat);
                     let lng = parseFloat(e.target.dataset.lng);
 
-                    // Bei Polygonen
+                    // Bei Polygonen oder Einzel-Feature
                     if (!(isFinite(lat) && isFinite(lng))) {
                         const st = window.stationsByName?.get(name);
-                        const f0 = st?.geojson?.features?.[0];
-                        const center = f0 ? bboxCenterOfGeometry(f0.geometry) : null; 
+                        let center = null;
+
+                        // FeatureCollection
+                        if (st?.geojson?.type === "FeatureCollection") {
+                            const f0 = st.geojson.features?.[0];
+                            center = f0 ? bboxCenterOfGeometry(f0.geometry) : null;
+                        }
+                        // Einzelnes Feature
+                        else if (st?.geojson?.type === "Feature") {
+                            center = st.geojson.geometry ? bboxCenterOfGeometry(st.geojson.geometry) : null;
+                        }
+
                         if (center) { lng = center[0]; lat = center[1]; }
                     }
 
