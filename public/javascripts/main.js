@@ -172,8 +172,16 @@ function buildWaypointsFromChecked() {
     //BBox-Mitte aus GeoJSON (für Polygone)
     if (!(isFinite(lat) && isFinite(lng))) {
       const station = window.stationsByName?.get(name);
-      const f0 = station?.geojson?.features?.[0];
-      const center = f0 ? bboxCenterOfGeometry(f0.geometry) : null; 
+
+      // Unterstützt FeatureCollection und einzelnes Feature
+      let feature = null;
+      if (station?.geojson?.type === "FeatureCollection") {
+        feature = station.geojson.features?.[0];
+      } else if (station?.geojson?.type === "Feature") {
+        feature = station.geojson;
+      }
+
+      const center = feature ? bboxCenterOfGeometry(feature.geometry) : null;
       if (center) {
         lng = center[0];
         lat = center[1];

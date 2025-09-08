@@ -57,32 +57,37 @@ async function loadStationsOnMap() {
       const station = byName.get(name);
       if (!station || !station.geojson) return;
 
-      const f0 = station.geojson?.features?.[0];
-      const c = bboxCenterOfGeometry(f0.geometry);
+      // Prüfe, ob FeatureCollection oder einzelnes Feature
+      let feature;
+      if (station.geojson.type === "FeatureCollection") {
+        feature = station.geojson.features?.[0];
+      } else if (station.geojson.type === "Feature") {
+        feature = station.geojson;
+      }
 
-      if (f0?.geometry?.type === "Point") {
-        // Punkt-Geometrien als Marker mit Popup
-        L.geoJSON(station.geojson, {
+      if (!feature || !feature.geometry) {
+        console.warn('Station ohne Geometrie:', station.name);
+        return;
+      }
+
+      const c = bboxCenterOfGeometry(feature.geometry);
+
+      if (feature.geometry.type === "Point") {
+        L.geoJSON(feature, {
           pointToLayer: (_feature, latlng) => L.marker(latlng)
         })
           .bindPopup(popupHtml(station.name, station.description))
           .addTo(routeLayer);
-      } else if (f0 && f0.geometry) {
-        // Polygone auf die Karte zeichnen 
-        L.geoJSON(station.geojson)
+      } else {
+        L.geoJSON(feature)
           .bindPopup(popupHtml(station.name, station.description))
           .addTo(routeLayer);
 
-        // ... und einen Marker am Mittelpunkt der BoundingBox setzen
-        const c = bboxCenterOfGeometry(f0.geometry); 
         if (c) {
           L.marker([c[1], c[0]])
             .bindPopup(popupHtml(station.name, station.description))
             .addTo(routeLayer);
         }
-      } else {
-        // kein Geometry gefunden -> nichts zeichnen
-        console.warn('Station ohne Geometrie:', station.name);
       }
     });
 
