@@ -95,7 +95,8 @@ async function loadStationsOnMap() {
 
 
     // Route aktualisieren/entfernen, falls Marker entfernt werden 
-    const waypoints = buildWaypointsFromChecked();
+    const roundtrip = document.getElementById('check-roundtour')?.checked;
+    const waypoints = buildWaypointsFromChecked({ closeLoop: roundtrip });
 
     if (routeControl) {
       if (waypoints.length >= 2) {
@@ -182,7 +183,8 @@ let routeControl = null;
 // --- Funktion zum Erstellen der Fahrradtour aus ausgewählten Stationen ---
 function createBikeTourFromSelectedStations() {
 
-  const waypoints = buildWaypointsFromChecked();
+  const roundtrip = document.getElementById('check-roundtour')?.checked;
+  const waypoints = buildWaypointsFromChecked({ closeLoop: roundtrip });
 
   if (waypoints.length < 2) {
     alert("Mindestens zwei Stationen wählen.");
@@ -219,6 +221,21 @@ function createBikeTourFromSelectedStations() {
 document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("create-tour-map")) {
     initMapCreateTour();
+  }
+
+  const roundtripEl = document.getElementById("check-roundtour"); 
+  if (roundtripEl) {
+    roundtripEl.addEventListener("change", () => {
+      if (!routeControl) return; 
+
+      const wps = buildWaypointsFromChecked({ closeLoop: roundtripEl.checked });
+      if (wps.length >= 2) {
+        routeControl.setWaypoints(wps);
+      } else {
+        routePlanningMap.removeControl(routeControl);
+        routeControl = null;
+      }
+    });
   }
 })
 

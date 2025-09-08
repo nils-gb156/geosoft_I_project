@@ -156,20 +156,21 @@ function bboxCenterOfGeometry(geom) {
 
 // Funktion baut Waypoints aus aktuell gecheckten Checkboxen
 
-function buildWaypointsFromChecked() {
+function buildWaypointsFromChecked(opts = {}) {
+  const closeLoop = !!opts.closeLoop;
+
   const checkedBoxes = Array.from(document.querySelectorAll("#stations-table-body input[type='checkbox']:checked"));
   const checkedSet = new Set(checkedBoxes.map(cb => cb.value));
   const byNameCb = new Map(checkedBoxes.map(cb => [cb.value, cb]));
 
+  // Reihenfolge gemäß selectionOrder
   const orderedNames = selectionOrder.filter(name => checkedSet.has(name));
 
-  return orderedNames.map(name => {
+  const wps = orderedNames.map(name => {
     const cb = byNameCb.get(name);
-
     let lat = parseFloat(cb?.dataset?.lat);
     let lng = parseFloat(cb?.dataset?.lng);
 
-    //BBox-Mitte aus GeoJSON (für Polygone)
     if (!(isFinite(lat) && isFinite(lng))) {
       const station = window.stationsByName?.get(name);
 
@@ -192,4 +193,13 @@ function buildWaypointsFromChecked() {
       ? L.Routing.waypoint(L.latLng(lat, lng))
       : null;
   }).filter(Boolean);
+
+  // Rundtour schließen: ersten Punkt erneut ans Ende anhängen
+  if (closeLoop && wps.length >= 2) {
+    const first = wps[0];
+    wps.push(L.Routing.waypoint(first.latLng));
+  }
+
+  return wps;
 }
+
