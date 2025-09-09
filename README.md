@@ -48,8 +48,9 @@ Sie wurde im Rahmen eines universitären Lehrprojekts am Institut für Geoinform
    [http://localhost:4000](http://localhost:4000)
 
 **Hinweis:**  
-- Die MongoDB ist unter Port `27017` erreichbar.  
-- Das Admin-Interface [mongo-express](https://github.com/mongo-express/mongo-express) ist unter [http://localhost:8081](http://localhost:8081) verfügbar.
+- Die MongoDB-Datenbank ist unter dem Port `27017` erreichbar.  
+- Das Administrations-Interface [mongo-express](https://github.com/mongo-express/mongo-express) findest du unter [http://localhost:8085](http://localhost:8085).  
+  Standard-Zugangsdaten: Benutzername `admin`, Passwort `pass`.
 
 ## Verzeichnisstruktur
 
