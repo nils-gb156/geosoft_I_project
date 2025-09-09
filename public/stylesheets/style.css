@@ -11,6 +11,15 @@ footer {
   z-index: 1000;
 } 
 
+header .navbar-nav .nav-link.active {
+  color: black;
+  font-weight: bold;
+}
+footer .nav .nav-link.active {
+  color: black;
+  font-weight: bold;
+}
+
 /* Hintergrundfarben */
 header nav.navbar {
   background-color: #A5D6A7;
