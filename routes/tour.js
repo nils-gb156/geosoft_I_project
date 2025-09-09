@@ -90,12 +90,12 @@ router.post('/delete-tour', async (req, res) => {
 
 // Tour bearbeiten
 router.post('/edit-tour', async (req, res) => {
-  const { oldName, name, waypoints, routeGeojson } = req.body;
+  const { oldName, name, description, waypoints, routeGeojson } = req.body;
   try {
     const dbInstance = db.getDb();
     await dbInstance.collection('tours').updateOne(
       { name: oldName },
-      { $set: { name, waypoints, routeGeojson } }
+      { $set: { name, description, waypoints, routeGeojson } }
     );
     res.json({ success: true });
   } catch (err) {

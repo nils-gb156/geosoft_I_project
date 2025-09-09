@@ -51,11 +51,86 @@ async function loadTours() {
 window.loadTours = loadTours;
 
 // Zeigt die Route und Marker der ausgewählten Tour auf der Karte an
-async function showTourOnMap(name) {
-  const response = await fetch('/get-tours');
-  const tours = await response.json();
-  const tour = tours.find(t => t.name === name);
-  if (!tour) return;
+let currentTourLayer;
+
+function showTourOnMap(name) {
+  const row = Array.from(document.querySelectorAll("#tour-table-body tr"))
+    .find(r => {
+      try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+    });
+
+  let tour = row ? JSON.parse(row.dataset.tour) : null;
+
+  if (!tour) {
+    console.warn("Tour nicht im DOM gefunden – Fallback /get-tours");
+    fetch("/get-tours")
+      .then(r => r.json())
+      .then(list => {
+        const t = list.find(tt => tt.name === name);
+        if (t) {
+          if (row) row.dataset.tour = JSON.stringify(t);
+          renderTourOnMap(t);
+        } else {
+          alert("Tour nicht gefunden.");
+        }
+      });
+    return;
+  }
+  renderTourOnMap(tour);
+}
+
+function renderTourOnMap(tour) {
+  if (!window.editTourMap) return;
+
+  // Alte Layer entfernen
+  if (currentTourLayer) {
+    currentTourLayer.remove();
+    currentTourLayer = null;
+  }
+
+  const group = L.layerGroup().addTo(editTourMap);
+
+  // Marker
+  (tour.waypoints || []).forEach((wp, i) => {
+    if (Number.isFinite(wp.lat) && Number.isFinite(wp.lng)) {
+      L.marker([wp.lat, wp.lng])
+        .bindPopup(`${tour.name}<br>Punkt ${i + 1}`)
+        .addTo(group);
+    }
+  });
+
+  let lineLatLngs = [];
+
+  // Primär: gespeichertes GeoJSON
+  if (tour.routeGeojson?.geometry?.type === "LineString" &&
+      Array.isArray(tour.routeGeojson.geometry.coordinates)) {
+
+    lineLatLngs = tour.routeGeojson.geometry.coordinates
+      .map(c => Array.isArray(c) && c.length >= 2 ? L.latLng(c[1], c[0]) : null)
+      .filter(Boolean);
+  }
+
+  // Fallback: aus Waypoints rekonstruieren
+  if (lineLatLngs.length < 2 && Array.isArray(tour.waypoints) && tour.waypoints.length > 1) {
+    lineLatLngs = tour.waypoints
+      .filter(wp => Number.isFinite(wp.lat) && Number.isFinite(wp.lng))
+      .map(wp => L.latLng(wp.lat, wp.lng));
+    console.info("Fallback: Linie aus Waypoints erzeugt (kein gültiges routeGeojson).");
+  }
+
+  if (lineLatLngs.length > 1) {
+    L.polyline(lineLatLngs, {
+      color: "#1E88E5",
+      weight: 5,
+      opacity: 0.9
+    }).addTo(group);
+
+    editTourMap.fitBounds(L.latLngBounds(lineLatLngs), { padding: [30, 30] });
+  } else {
+    console.warn("Keine Liniengeometrie darstellbar (Route fehlt oder <2 Punkte).");
+  }
+
+  currentTourLayer = group;
 }
 
 // Lädt die Tour als GeoJSON-Datei herunter

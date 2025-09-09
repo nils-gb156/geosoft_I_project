@@ -194,7 +194,9 @@ function saveTour() {
     .then(result => {
       if (result.success) {
         alert("Tour gespeichert!");
-        loadTours(); // Tabelle aktualisieren
+        document.getElementById("tour-name").value = "";
+        document.getElementById("tour-description").value = "";
+        loadTours();
       } else {
         alert(result.error || "Fehler beim Speichern der Tour.");
       }
