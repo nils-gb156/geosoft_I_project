@@ -7,7 +7,7 @@ services:
     depends_on:
       - mongoservice
     environment:
-      - MONGO_URI=mongodb://mongoservice:27017/deinedb
+      - MONGO_URI=mongodb://mongoservice:27017/geosoftware_I
     volumes:
       - .:/app
       - /app/node_modules
@@ -19,7 +19,7 @@ services:
     ports:
       - '27017:27017'
     volumes:
-      - mongo-data:/data/db # Persist data
+      - mongo-data:/data/db
       - ./mongo-init/:/docker-entrypoint-initdb.d/:ro
 
   mongoexpressservice:
