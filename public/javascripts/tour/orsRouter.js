@@ -78,3 +78,5 @@ const orsProxyRouter = {
       });
   }
 };
+
+window.orsProxyRouter = orsProxyRouter;

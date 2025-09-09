@@ -18,10 +18,3 @@ function cancelTourCreation() {
   loadStationsOnMap();
 }
 window.cancelTourCreation = cancelTourCreation;
-
-// Warte bis das HTML-Element existiert
-document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("edit-tour-map")) {
-    initMapEditTour();
-  }
-})

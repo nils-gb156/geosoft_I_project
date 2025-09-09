@@ -1,0 +1,7 @@
+#tour-table-body td:nth-child(3),
+#tour-table-body td:nth-child(4),
+#tour-table-body td:nth-child(5),
+#tour-table-body td:nth-child(6) {
+    width: 25px;        
+    text-align: center;
+}

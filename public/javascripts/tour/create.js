@@ -159,14 +159,49 @@ function createBikeTourFromSelectedStations() {
  * Speichert die berechnete Tour (Stationen und Routen zwischen den Stationen) in MongoDB.
  */
 function saveTour() {
+  const name = document.getElementById("tour-name").value.trim();
+  const description = document.getElementById("tour-description").value.trim(); // NEU
 
-}
+  if (!name) {
+    alert("Bitte einen Namen für die Tour eingeben.");
+    return;
+  }
+  if (!routeControl) {
+    alert("Bitte zuerst eine Route berechnen.");
+    return;
+  }
+  // Hole die Waypoints und Route als GeoJSON
+  const waypoints = routeControl.getWaypoints().map(wp => ({
+    lat: wp.latLng.lat,
+    lng: wp.latLng.lng
+  }));
+  const routeGeojson = routeControl._routes?.[0]
+    ? {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: routeControl._routes[0].coordinates.map(ll => [ll.lng, ll.lat])
+        }
+      }
+    : null;
 
-/**
- * Bricht die Erstellung der Tour ab und setzt alle Änderungen zurück. 
- */
-function cancelTourCreation() {
-
+  fetch("/save-tour", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, description, waypoints, routeGeojson }) // Beschreibung mitsenden
+  })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        alert("Tour gespeichert!");
+        document.getElementById("tour-name").value = "";
+        document.getElementById("tour-description").value = "";
+        loadTours();
+      } else {
+        alert(result.error || "Fehler beim Speichern der Tour.");
+      }
+    })
+    .catch(() => alert("Fehler beim Speichern der Tour."));
 }
 
 // Warte bis das HTML-Element existiert
