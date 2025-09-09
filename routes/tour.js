@@ -50,4 +50,57 @@ router.post('/route-bike', async (req, res) => {
   }
 });
 
+// Tour speichern
+router.post('/save-tour', async (req, res) => {
+  const { name, description, waypoints, routeGeojson } = req.body;
+  if (!name || !Array.isArray(waypoints) || !routeGeojson) {
+    return res.status(400).json({ error: "Ungültige Daten" });
+  }
+  try {
+    const dbInstance = db.getDb();
+    await dbInstance.collection('tours').insertOne({ name, description, waypoints, routeGeojson });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Speichern der Tour" });
+  }
+});
+
+// Alle Touren laden
+router.get('/get-tours', async (req, res) => {
+  try {
+    const dbInstance = db.getDb();
+    const tours = await dbInstance.collection('tours').find().toArray();
+    res.json(tours);
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Laden der Touren" });
+  }
+});
+
+// Tour löschen
+router.post('/delete-tour', async (req, res) => {
+  const { name } = req.body;
+  try {
+    const dbInstance = db.getDb();
+    await dbInstance.collection('tours').deleteOne({ name });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Löschen der Tour" });
+  }
+});
+
+// Tour bearbeiten
+router.post('/edit-tour', async (req, res) => {
+  const { oldName, name, waypoints, routeGeojson } = req.body;
+  try {
+    const dbInstance = db.getDb();
+    await dbInstance.collection('tours').updateOne(
+      { name: oldName },
+      { $set: { name, waypoints, routeGeojson } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Bearbeiten der Tour" });
+  }
+});
+
 module.exports = router;

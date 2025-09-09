@@ -31,6 +31,10 @@
     <script defer src="javascripts/tour/delete.js"></script>
 
     <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/tour.css">
+
+   
+
 
 
 </head>
@@ -78,6 +82,14 @@
                             <div class="input-group">
                                 <span class="input-group-text" style="width: 140px;">Name</span>
                                 <input id="tour-name" type="text" class="form-control" aria-label="Name">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <span class="input-group-text" style="width: 140px;">Beschreibung</span>
+                                <input id="tour-description" type="text" class="form-control" aria-label="Beschreibung">
                             </div>
                         </div>
                     </div>
@@ -139,13 +151,14 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th></th> <!-- Button zum Anzeigen auf der Karte-->
-                        <th></th> <!-- Button zum Bearbeiten-->
-                        <th></th> <!-- Button zum Löschen-->
+                        <th>Beschreibung</th>
+                        <th></th> <!-- Anzeigen -->
+                        <th></th> <!-- Download -->
+                        <th></th> <!-- Editieren -->
+                        <th></th> <!-- Löschen -->
                     </tr>
                 </thead>
                 <tbody id="tour-table-body"></tbody>
-                <!-- Das befüllen der Tabelle funktioniert genau so wie bei den Stationen oben auf der Seite Stations-Verwaltung-->
             </table>
 
         </div>
