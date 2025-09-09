@@ -4,6 +4,22 @@ const routePlanningMap = L.map('create-tour-map').setView([51, 10], 6);
 window.routePlanningMap = routePlanningMap;
 let routeLayer;
 let previousSelectedNames = new Set();
+let segmentPopupLayer = null;
+let routeControl = null; // (falls weiter unten nochmals deklariert -> dort entfernen)
+
+// NEU: zentrale Aufräumfunktion
+function clearRouteArtifacts() {
+  if (routeControl) {
+    routePlanningMap.removeControl(routeControl);
+    routeControl = null;
+  }
+  if (segmentPopupLayer) {
+    routePlanningMap.removeLayer(segmentPopupLayer);
+    segmentPopupLayer = null;
+  }
+}
+// global verfügbar
+window.clearRouteArtifacts = clearRouteArtifacts;
 
 
 
@@ -20,11 +36,7 @@ function initMapCreateTour() {
 }
 
 async function loadStationsOnMap() {
-  // Vorherige Marker entfernen
-  if (routeLayer) {
-    routePlanningMap.removeLayer(routeLayer);
-  }
-
+  if (routeLayer) routePlanningMap.removeLayer(routeLayer);
   try {
     const response = await fetch('/get-stations');
     const stations = await response.json();
@@ -66,7 +78,6 @@ async function loadStationsOnMap() {
       }
 
       if (!feature || !feature.geometry) {
-        console.warn('Station ohne Geometrie:', station.name);
         return;
       }
 
@@ -100,12 +111,10 @@ async function loadStationsOnMap() {
 
     if (routeControl) {
       if (waypoints.length >= 2) {
-        // nur Waypoints updaten -> Segment des entfernten Markers verschwindet
         routeControl.setWaypoints(waypoints);
       } else {
-        // < 2 Marker -> Route komplett entfernen
-        routePlanningMap.removeControl(routeControl);
-        routeControl = null;
+        // < 2 -> Route + Segmente entfernen
+        clearRouteArtifacts();
       }
     }
 
@@ -116,9 +125,7 @@ async function loadStationsOnMap() {
   }
 }
 
-let routeControl = null;
-
-// --- Funktion zum Erstellen der Fahrradtour aus ausgewählten Stationen ---
+// --- Funktion zum Erstellen der Fahrradtour ---
 function createBikeTourFromSelectedStations() {
 
   const roundtrip = document.getElementById('check-roundtour')?.checked;
@@ -129,29 +136,57 @@ function createBikeTourFromSelectedStations() {
     return;
   }
 
-  // Falls schon eine Route existiert → entfernen
-  if (routeControl) {
-    routePlanningMap.removeControl(routeControl);
-    routeControl = null;
-  }
+  // Vorher alles bereinigen
+  clearRouteArtifacts();
 
   // Routing-Control mit ORS-Router
   routeControl = L.Routing.control({
     waypoints,
-    router: window.orsProxyRouter, 
+    router: window.orsProxyRouter,
     showAlternatives: false,
     draggableWaypoints: false,
     addWaypoints: false,
     routeWhileDragging: false,
-    addWaypoints: false,
     fitSelectedRoutes: true,
     show: false,
-    lineOptions: { styles: [{ weight: 5, opacity: 0.9}] },
+    lineOptions: { styles: [{ weight: 5, opacity: 0.9, color: '#1E88E5' }] },
     createMarker: () => null
   }).addTo(routePlanningMap);
 
+  // Falls das Control entfernt wird -> Segmente ebenfalls weg
+  routeControl.on('remove', () => {
+    if (segmentPopupLayer) {
+      routePlanningMap.removeLayer(segmentPopupLayer);
+      segmentPopupLayer = null;
+    }
+  });
 
+  // Segment-Popups hinzufügen
+  routeControl.on('routesfound', e => {
+    const r = e.routes[0];
+    addSegmentPopups(r);
+  });
+}
 
+// Segmente als Popup
+function addSegmentPopups(routeObj) {
+  if (segmentPopupLayer) {
+    routePlanningMap.removeLayer(segmentPopupLayer);
+    segmentPopupLayer = null;
+  }
+  if (!routeObj || !Array.isArray(routeObj.segmentData) || !routeObj.segmentData.length) return;
+  segmentPopupLayer = L.layerGroup().addTo(routePlanningMap);
+  const coords = routeObj.coordinates;
+  routeObj.segmentData.forEach((seg, idx) => {
+    const { startIdx, endIdx, distance } = seg;
+    if (!Number.isFinite(startIdx) || !Number.isFinite(endIdx)) return;
+    const slice = coords.slice(startIdx, endIdx + 1).map(ll => L.latLng(ll.lat, ll.lng));
+    if (slice.length < 2) return;
+    const km = (distance / 1000).toFixed(2) + " km";
+    const pl = L.polyline(slice, { color: '#1976D2', weight: 7, opacity: 0.25 }).addTo(segmentPopupLayer);
+    const mid = slice[Math.round(slice.length / 2)] || slice[0];
+    pl.bindTooltip(`Abschnitt ${idx + 1}: ${km}`, { permanent: true, direction: 'center', className: 'segment-tooltip' });
+  });
 }
 
 
@@ -175,12 +210,16 @@ function saveTour() {
     lat: wp.latLng.lat,
     lng: wp.latLng.lng
   }));
-  const routeGeojson = routeControl._routes?.[0]
+  const routeObj = routeControl._routes?.[0];
+  const routeGeojson = routeObj
     ? {
         type: "Feature",
+        properties: {
+          segmentData: routeObj.segmentData || [] // NEU
+        },
         geometry: {
           type: "LineString",
-          coordinates: routeControl._routes[0].coordinates.map(ll => [ll.lng, ll.lat])
+          coordinates: routeObj.coordinates.map(ll => [ll.lng, ll.lat])
         }
       }
     : null;

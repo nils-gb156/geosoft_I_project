@@ -49,17 +49,28 @@ const orsProxyRouter = {
 
         // ORS liefert encodierte Polyline -> decodieren
         if (data?.routes && typeof data.routes[0]?.geometry === 'string') {
-          const latLngs = decodePolyline(data.routes[0].geometry, 5);
-          const distance = data.routes[0].summary?.distance || 0;
-          const duration = data.routes[0].summary?.duration || 0;
+          const r = data.routes[0];
+          const latLngs = decodePolyline(r.geometry, 5);
+          const distance = r.summary?.distance || 0;
+
+          // Indizes der Waypoints im decodierten Linien-Array
+          const wpIdx = Array.isArray(r.way_points) ? r.way_points : [];
+          // Segmentdistanz + Start/End-Indizes sichern
+          const segments = Array.isArray(r.segments) ? r.segments : [];
+          const segmentData = segments.map((seg, i) => ({
+            distance: seg.distance,          // Meter
+            startIdx: wpIdx[i],
+            endIdx: wpIdx[i + 1]
+          })).filter(s => Number.isFinite(s.startIdx) && Number.isFinite(s.endIdx));
 
           const routeForLRM = {
             name: 'Bike (ORS)',
             coordinates: latLngs,
-            summary: { totalDistance: distance, totalTime: duration },
+            summary: { totalDistance: distance},
             instructions: [],
             waypoints: waypoints.map(wp => ({ latLng: wp.latLng })),
-            inputWaypoints: waypoints
+            inputWaypoints: waypoints,
+            segmentData
           };
 
           return callback.call(context, null, [routeForLRM]);

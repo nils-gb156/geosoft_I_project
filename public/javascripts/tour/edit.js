@@ -14,56 +14,89 @@ function initMapEditTour() {
   }).addTo(editTourMap);
 }
 
+// Liefert eine leere Karte (bei neuen Touren oder gelöschten Touren sinnvoll)
+function clearTourMap() {
+  if (currentTourLayer) {
+    currentTourLayer.remove();
+    currentTourLayer = null;
+  }
+  if (currentSegmentPopupsLayer) {
+    currentSegmentPopupsLayer.remove();
+    currentSegmentPopupsLayer = null;
+  }
+}
 
 // Lädt die Touren aus der Datenbank und fügt sie in die Tabelle ein
 async function loadTours() {
+  clearTourMap();
   try {
     const response = await fetch('/get-tours');
     const tours = await response.json();
     const tableBody = document.getElementById("tour-table-body");
     tableBody.innerHTML = "";
-
     tours.forEach(tour => {
       const row = document.createElement("tr");
       row.dataset.tour = JSON.stringify(tour);
       row.innerHTML = `
   <td>${tour.name}</td>
   <td>${tour.description || ""}</td>
-  <td>
-    <img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')">
-  </td>
-  <td>
-    <img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')">
-  </td>
-  <td>
-    <img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">
-  </td>
-  <td>
-    <img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')">
-  </td>
+  <td><img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')"></td>
+  <td><img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')"></td>
+  <td><img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')"></td>
+  <td><img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')"></td>
 `;
-      row.dataset.tour = JSON.stringify(tour);
       tableBody.appendChild(row);
     });
-  } catch (error) {
-    console.error("Fehler beim Laden der Touren:", error);
+  } catch (_) {
+    // optional: still keep silent or send to error monitor
   }
 }
 window.loadTours = loadTours;
 
 // Zeigt die Route und Marker der ausgewählten Tour auf der Karte an
 let currentTourLayer;
+let currentSegmentPopupsLayer = null;
+
+// Hilfsfunktion: segmentData nachträglich berechnen falls fehlt
+function buildSegmentDataFromWaypoints(tour, lineLatLngs) {
+  if (!Array.isArray(tour.waypoints) || tour.waypoints.length < 2) return [];
+  if (!Array.isArray(lineLatLngs) || lineLatLngs.length < 2) return [];
+  const wpIndices = tour.waypoints.map(wp => {
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    lineLatLngs.forEach((p, i) => {
+      const d = Math.hypot(p.lat - wp.lat, p.lng - wp.lng);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    return bestIdx;
+  });
+  const cleaned = [];
+  wpIndices.forEach(idx => {
+    if (idx >= 0 && (cleaned.length === 0 || idx > cleaned[cleaned.length - 1])) cleaned.push(idx);
+  });
+  if (cleaned.length < 2) return [];
+  const cum = [0];
+  for (let i = 1; i < lineLatLngs.length; i++) {
+    const d = editTourMap.distance(lineLatLngs[i - 1], lineLatLngs[i]);
+    cum.push(cum[cum.length - 1] + d);
+  }
+  const segments = [];
+  for (let i = 0; i < cleaned.length - 1; i++) {
+    const s = cleaned[i], e = cleaned[i + 1];
+    if (s < 0 || e <= s) continue;
+    segments.push({ startIdx: s, endIdx: e, distance: cum[e] - cum[s] });
+  }
+  return segments;
+}
 
 function showTourOnMap(name) {
   const row = Array.from(document.querySelectorAll("#tour-table-body tr"))
     .find(r => {
       try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
     });
-
   let tour = row ? JSON.parse(row.dataset.tour) : null;
 
   if (!tour) {
-    console.warn("Tour nicht im DOM gefunden – Fallback /get-tours");
     fetch("/get-tours")
       .then(r => r.json())
       .then(list => {
@@ -81,15 +114,16 @@ function showTourOnMap(name) {
 }
 
 function renderTourOnMap(tour) {
-  if (!window.editTourMap) {
-    console.warn("editTourMap fehlt.");
-    return;
-  }
+  if (!window.editTourMap) return;
 
   // Alte Layer entfernen
   if (currentTourLayer) {
     currentTourLayer.remove();
     currentTourLayer = null;
+  }
+  if (currentSegmentPopupsLayer) {
+    currentSegmentPopupsLayer.remove();
+    currentSegmentPopupsLayer = null;
   }
 
   const group = L.layerGroup().addTo(editTourMap);
@@ -103,8 +137,8 @@ function renderTourOnMap(tour) {
     }
   });
 
+  // Linienpunkte
   let lineLatLngs = [];
-
   if (tour.routeGeojson?.geometry?.type === "LineString" &&
       Array.isArray(tour.routeGeojson.geometry.coordinates)) {
     lineLatLngs = tour.routeGeojson.geometry.coordinates
@@ -112,6 +146,7 @@ function renderTourOnMap(tour) {
       .filter(Boolean);
   }
 
+  // Fallback: direkte Verbindung Waypoints
   if (lineLatLngs.length < 2 && Array.isArray(tour.waypoints) && tour.waypoints.length > 1) {
     lineLatLngs = tour.waypoints
       .filter(wp => Number.isFinite(wp.lat) && Number.isFinite(wp.lng))
@@ -125,11 +160,68 @@ function renderTourOnMap(tour) {
       opacity: 0.9
     }).addTo(group);
     editTourMap.fitBounds(L.latLngBounds(lineLatLngs), { padding: [30, 30] });
-  } else {
-    console.info("Keine Liniengeometrie darstellbar.");
   }
 
+  // Segmente zeichnen (nur noch Tooltips – alter Marker-Label Code entfernt)
+  addStoredSegmentPopups(tour, lineLatLngs);
+
   currentTourLayer = group;
+}
+
+function addStoredSegmentPopups(tour, lineLatLngs) {
+  currentSegmentPopupsLayer = L.layerGroup().addTo(editTourMap);
+  let segData = tour.routeGeojson?.properties?.segmentData;
+
+  // Falls segData fehlt: rekonstruieren
+  if (!Array.isArray(segData) || !segData.length) {
+    segData = buildSegmentDataFromWaypoints(tour, lineLatLngs);
+  }
+
+  if (Array.isArray(segData) && segData.length && Array.isArray(lineLatLngs) && lineLatLngs.length) {
+    segData.forEach((seg, idx) => {
+      const { startIdx, endIdx, distance } = seg;
+      if (!Number.isFinite(startIdx) || !Number.isFinite(endIdx)) return;
+      if (!lineLatLngs[startIdx] || !lineLatLngs[endIdx]) return;
+      const slice = lineLatLngs.slice(startIdx, endIdx + 1);
+      if (slice.length < 2) return;
+      const km = (distance / 1000).toFixed(2) + " km";
+      const pl = L.polyline(slice, {
+        color: '#1976D2',
+        weight: 7,
+        opacity: 0.25
+      }).addTo(currentSegmentPopupsLayer);
+      const midIdx = Math.round(slice.length / 2);
+      const mid = slice[midIdx] || slice[0];
+      pl.bindTooltip(`Abschnitt ${idx + 1}: ${km}`, {
+        permanent: true,
+        direction: 'center',
+        className: 'segment-tooltip'
+      });
+    });
+    return;
+  }
+
+  // Fallback: Waypoints Luftlinie
+  if (Array.isArray(tour.waypoints) && tour.waypoints.length > 1) {
+    for (let i = 0; i < tour.waypoints.length - 1; i++) {
+      const a = tour.waypoints[i], b = tour.waypoints[i + 1];
+      if (![a,b].every(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))) continue;
+      const slice = [L.latLng(a.lat, a.lng), L.latLng(b.lat, b.lng)];
+      const dist = editTourMap.distance([a.lat, a.lng], [b.lat, b.lng]);
+      const km = (dist / 1000).toFixed(2) + " km";
+      const pl = L.polyline(slice, {
+        color: '#455A64',
+        weight: 6,
+        opacity: 0.35,
+        dashArray: '6,6'
+      }).addTo(currentSegmentPopupsLayer);
+      pl.bindTooltip(`Abschnitt ${i + 1}: ${km}`, {
+        permanent: true,
+        direction: 'center',
+        className: 'segment-tooltip fallback'
+      });
+    }
+  }
 }
 
 // Lädt die Tour als GeoJSON-Datei herunter
@@ -152,11 +244,13 @@ function downloadTour(name) {
 // Löscht die ausgewählte Tour
 async function deleteTour(name) {
   if (!confirm("Möchtest du die Tour wirklich löschen?")) return;
-  await fetch("/delete-tour", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name })
-  });
+  try {
+    await fetch("/delete-tour", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name })
+    });
+  } catch (_) {}
   loadTours();
 }
 
@@ -213,12 +307,10 @@ async function saveTourChanges(name) {
                 routeGeojson: tour.routeGeojson
             }),
         });
-
         const result = await response.json();
-
         if (!response.ok) {
-            alert(result.error || "Fehler beim Speichern der Tour.");
-            return;
+          alert(result.error || "Fehler beim Speichern der Tour.");
+          return;
         }
 
         // Tabelle wieder normal darstellen
@@ -239,8 +331,7 @@ async function saveTourChanges(name) {
             routeGeojson: tour.routeGeojson
         });
 
-    } catch (error) {
-        console.error("Speichern fehlgeschlagen:", error);
+    } catch (_) {
         alert("Fehler beim Speichern");
     }
 }

@@ -5,3 +5,20 @@
     width: 25px;        
     text-align: center;
 }
+
+.segment-tooltip {
+  background:#5a5a5a;
+  color:#fff;
+  padding:2px 6px;
+  border-radius:4px;
+  font-size:11px;
+  line-height:1;
+  font-family:system-ui,sans-serif;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+  border:none;
+}
+.segment-tooltip.fallback {
+  background:#455A64;
+}
+
+
