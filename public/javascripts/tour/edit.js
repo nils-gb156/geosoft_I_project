@@ -40,6 +40,8 @@ async function loadTours() {
       row.innerHTML = `
   <td>${tour.name}</td>
   <td>${(tour.description && tour.description.trim()) ? tour.description : "-"}</td>
+  <td>${formatTourDistance(tour)}</td>
+  <td>${formatTourDuration(tour)}</td>
   <td><img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')"></td>
   <td><img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')"></td>
   <td><img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')"></td>
@@ -195,103 +197,147 @@ async function deleteTour(name) {
   loadTours();
 }
 
-// Bearbeiten der ausgewählten Tour (nur Namen und Beschreibung)
+// Bearbeiten der ausgewählten Tour (nur Name & Beschreibung; Distanz/Dauer bleiben schreibgeschützt)
 function editTour(name) {
-    const tableBody = document.getElementById("tour-table-body");
-    const rows = tableBody.querySelectorAll("tr");
+  const tableBody = document.getElementById("tour-table-body");
+  const rows = tableBody.querySelectorAll("tr");
 
-    // Finde die Zeile der aktuellen Tour
-    const row = Array.from(rows).find(r => JSON.parse(r.dataset.tour).name === name);
-    if (!row) return;
+  const row = Array.from(rows).find(r => {
+    try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+  });
+  if (!row) return;
 
-    const tour = JSON.parse(row.dataset.tour);
+  const tour = JSON.parse(row.dataset.tour);
 
-    // Buttons nur für diese Zeile umwandeln
-    row.querySelector("td:nth-child(3)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
-    row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/download.png" alt="Herunterladen" data-action="download" style="height: 25px; cursor: pointer;">';
-    row.querySelector("td:nth-child(5)").innerHTML = `<img src="images/save.png" alt="Speichern" style="height:25px;cursor:pointer;" onclick="saveTourChanges('${name}')">`;
-    row.querySelector("td:nth-child(6)").innerHTML = `<img src="images/cancel.png" alt="Abbrechen" style="height:25px;cursor:pointer;" onclick="cancelTourEditing('${name}')">`;
+  // Spalten:
+  // 1 Name | 2 Beschreibung | 3 Distanz | 4 Dauer | 5 View | 6 Download | 7 Edit/Save | 8 Delete/Cancel
+  // Nur Name & Beschreibung werden editierbar, Distanz/Dauer bleiben unverändert.
+  row.querySelector("td:nth-child(1)").innerHTML =
+    `<input type="text" class="form-control" value="${tour.name}">`;
+  row.querySelector("td:nth-child(2)").innerHTML =
+    `<input type="text" class="form-control" value="${tour.description || ""}">`;
 
-    // Zellen in Input-Felder umwandeln
-    row.querySelector("td:nth-child(1)").innerHTML = `<input type="text" class="form-control" value="${tour.name}">`;
-    row.querySelector("td:nth-child(2)").innerHTML = `<input type="text" class="form-control" value="${tour.description || ""}">`;
+  // View (5) & Download (6) unverändert lassen.
+  // Edit (7) -> Save; Delete (8) -> Cancel
+  row.querySelector("td:nth-child(7)").innerHTML =
+    `<img src="images/save.png" alt="Speichern" style="height:25px;cursor:pointer;" onclick="saveTourChanges('${name}')">`;
+  row.querySelector("td:nth-child(8)").innerHTML =
+    `<img src="images/cancel.png" alt="Abbrechen" style="height:25px;cursor:pointer;" onclick="cancelTourEditing('${name}')">`;
 }
 
-// Speichern der Änderungen
+// Speichern der Änderungen (nur Name & Beschreibung)
 async function saveTourChanges(name) {
-    const tableBody = document.getElementById("tour-table-body");
-    const rows = tableBody.querySelectorAll("tr");
-    const row = Array.from(rows).find(r => JSON.parse(r.dataset.tour).name === name);
-    if (!row) return;
+  const tableBody = document.getElementById("tour-table-body");
+  const rows = tableBody.querySelectorAll("tr");
+  const row = Array.from(rows).find(r => {
+    try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+  });
+  if (!row) return;
 
-    const tour = JSON.parse(row.dataset.tour);
+  const original = JSON.parse(row.dataset.tour);
+  const inputs = row.querySelectorAll("input");
+  if (inputs.length < 2) return;
 
-    const inputs = row.querySelectorAll("input");
-    const newName = inputs[0].value.trim();
-    const newDescription = inputs[1].value.trim(); // darf leer sein
+  const newName = inputs[0].value.trim();
+  const newDescription = inputs[1].value.trim();
 
-    if (!newName) {                   // <-- angepasst (Beschreibung nicht mehr Pflicht)
-        alert("Name darf nicht leer sein.");
-        return;
+  if (!newName) {
+    alert("Name darf nicht leer sein.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/edit-tour", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        oldName: original.name,
+        name: newName,
+        description: newDescription,
+        waypoints: original.waypoints,
+        routeGeojson: original.routeGeojson
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      alert(result.error || "Fehler beim Speichern der Tour.");
+      return;
     }
 
-    try {
-        const response = await fetch("/edit-tour", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                oldName: tour.name,
-                name: newName,
-                description: newDescription,   // kann leer sein
-                waypoints: tour.waypoints,
-                routeGeojson: tour.routeGeojson
-            }),
-        });
-        const result = await response.json();
-        if (!response.ok) {
-          alert(result.error || "Fehler beim Speichern der Tour.");
-          return;
-        }
+    // Zellen zurücksetzen
+    row.querySelector("td:nth-child(1)").textContent = newName;
+    row.querySelector("td:nth-child(2)").textContent = newDescription ? newDescription : "-";
 
-        row.querySelector("td:nth-child(1)").textContent = newName;
-        row.querySelector("td:nth-child(2)").textContent = newDescription ? newDescription : "-"; // "-" bei leer
+    // Aktionen (Spalten 5–8) wiederherstellen
+    row.querySelector("td:nth-child(5)").innerHTML =
+      `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${newName}')">`;
+    row.querySelector("td:nth-child(6)").innerHTML =
+      `<img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${newName}')">`;
+    row.querySelector("td:nth-child(7)").innerHTML =
+      `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${newName}')">`;
+    row.querySelector("td:nth-child(8)").innerHTML =
+      `<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${newName}')">`;
 
-        row.querySelector("td:nth-child(3)").innerHTML = '<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap(\'' + newName + '\')">';
-        row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour(\'' + newName + '\')">';
-        row.querySelector("td:nth-child(5)").innerHTML = `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${newName}')">`;
-        row.querySelector("td:nth-child(6)").innerHTML = '<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour(\'' + newName + '\')">';
+    // Datensatz aktualisieren (Distanz/Dauer unverändert)
+    row.dataset.tour = JSON.stringify({
+      name: newName,
+      description: newDescription,
+      waypoints: original.waypoints,
+      routeGeojson: original.routeGeojson
+    });
 
-        row.dataset.tour = JSON.stringify({
-            name: newName,
-            description: newDescription,
-            waypoints: tour.waypoints,
-            routeGeojson: tour.routeGeojson
-        });
-
-    } catch (_) {
-        alert("Fehler beim Speichern");
-    }
+  } catch (_) {
+    alert("Fehler beim Speichern");
+  }
 }
 
-// Abbrechen der Bearbeitung
+// Abbrechen ohne Speichern
 function cancelTourEditing(name) {
-    const tableBody = document.getElementById("tour-table-body");
-    const rows = tableBody.querySelectorAll("tr");
-    const row = Array.from(rows).find(r => JSON.parse(r.dataset.tour).name === name);
-    if (!row) return;
+  const tableBody = document.getElementById("tour-table-body");
+  const rows = tableBody.querySelectorAll("tr");
+  const row = Array.from(rows).find(r => {
+    try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+  });
+  if (!row) return;
 
-    const tour = JSON.parse(row.dataset.tour);
-    row.querySelector("td:nth-child(1)").textContent = tour.name;
-    row.querySelector("td:nth-child(2)").textContent = (tour.description && tour.description.trim()) ? tour.description : "-";
+  const tour = JSON.parse(row.dataset.tour);
 
-    // Buttons wiederherstellen
-    row.querySelector("td:nth-child(3)").innerHTML = '<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap(\'' + tour.name + '\')">';
-    row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour(\'' + tour.name + '\')">';
-    row.querySelector("td:nth-child(5)").innerHTML = `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">`;
-    row.querySelector("td:nth-child(6)").innerHTML = '<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour(\'' + tour.name + '\')">';
+  row.querySelector("td:nth-child(1)").textContent = tour.name;
+  row.querySelector("td:nth-child(2)").textContent =
+    (tour.description && tour.description.trim()) ? tour.description : "-";
 
-    // Dataset wiederherstellen
-    row.dataset.tour = JSON.stringify(tour);
+  // Aktionen (Spalten 5–8) wiederherstellen
+  row.querySelector("td:nth-child(5)").innerHTML =
+    `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')">`;
+  row.querySelector("td:nth-child(6)").innerHTML =
+    `<img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')">`;
+  row.querySelector("td:nth-child(7)").innerHTML =
+    `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">`;
+  row.querySelector("td:nth-child(8)").innerHTML =
+    `<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')">`;
+
+  // Dataset wiederherstellen
+  row.dataset.tour = JSON.stringify(tour);
+}
+
+function formatTourDistance(tour) {
+  const seg = tour.routeGeojson?.properties?.segmentData;
+  if (Array.isArray(seg) && seg.length) {
+    const total = seg.reduce((sum, s) => sum + (s.distance || 0), 0);
+    return (total / 1000).toFixed(2) + " km";
+  }
+  return "-";
+}
+function formatTourDuration(tour) {
+  const seg = tour.routeGeojson?.properties?.segmentData;
+  if (Array.isArray(seg) && seg.length && seg[0].duration !== undefined) {
+    const total = seg.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const minutes = Math.round(total / 60);
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h ? `${h}h ${m}m` : `${m}m`;
+  }
+  return "-";
 }
 
 window.showTourOnMap = showTourOnMap;
