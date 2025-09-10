@@ -14,15 +14,26 @@ function initMapEditTour() {
   }).addTo(editTourMap);
 }
 
+// Liefert eine leere Karte (bei neuen Touren oder gelöschten Touren sinnvoll)
+function clearTourMap() {
+  if (currentTourLayer) {
+    currentTourLayer.remove();
+    currentTourLayer = null;
+  }
+  if (currentSegmentPopupsLayer) {
+    currentSegmentPopupsLayer.remove();
+    currentSegmentPopupsLayer = null;
+  }
+}
 
 // Lädt die Touren aus der Datenbank und fügt sie in die Tabelle ein
 async function loadTours() {
+  clearTourMap();
   try {
     const response = await fetch('/get-tours');
     const tours = await response.json();
     const tableBody = document.getElementById("tour-table-body");
     tableBody.innerHTML = "";
-
     tours.forEach(tour => {
       const row = document.createElement("tr");
       row.dataset.tour = JSON.stringify(tour);
@@ -44,28 +55,110 @@ async function loadTours() {
     <img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')">
   </td>
 `;
-      row.dataset.tour = JSON.stringify(tour);
       tableBody.appendChild(row);
     });
-  } catch (error) {
-    console.error("Fehler beim Laden der Touren:", error);
+  } catch (_) {
+    // optional: still keep silent or send to error monitor
   }
 }
 window.loadTours = loadTours;
 
 // Zeigt die Route und Marker der ausgewählten Tour auf der Karte an
 let currentTourLayer;
+let currentSegmentPopupsLayer = null;
 
+let stationsCache = null;
+async function ensureStationsLoaded() {
+  if (stationsCache) return stationsCache;
+  try {
+    const res = await fetch('/get-stations');
+    const list = await res.json();
+    stationsCache = new Map(list.map(s => [s.name, s]));
+  } catch (_) {
+    stationsCache = new Map();
+  }
+  return stationsCache;
+}
+
+// Zeigt Tour auf der Karte
+async function renderTourOnMap(tour) {
+  if (!window.editTourMap) return;
+
+  if (currentTourLayer) { currentTourLayer.remove(); currentTourLayer = null; }
+  if (currentSegmentPopupsLayer) { currentSegmentPopupsLayer.remove(); currentSegmentPopupsLayer = null; }
+
+  const group = L.layerGroup().addTo(editTourMap);
+
+  const stationsMap = await ensureStationsLoaded();
+
+  (tour.waypoints || []).forEach(wp => {
+    if (!Number.isFinite(wp.lat) || !Number.isFinite(wp.lng)) return;
+    const st = stationsMap.get(wp.stationName);
+    if (!st) return; // kein Fallback nötig
+    const popupHtml = `<div style="font-size:13px;line-height:1.25">
+  <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${st.name}</div>
+  ${st.description ? `<div>${st.description}</div>` : ``}
+  ${st.url ? `<div><a href="${st.url}" target="_blank" rel="noopener">Mehr...</a></div>` : ``}
+</div>`;
+    L.marker([wp.lat, wp.lng]).bindPopup(popupHtml).addTo(group);
+  });
+
+  let lineLatLngs = [];
+  if (tour.routeGeojson?.geometry?.type === "LineString" &&
+      Array.isArray(tour.routeGeojson.geometry.coordinates)) {
+    lineLatLngs = tour.routeGeojson.geometry.coordinates
+      .map(c => Array.isArray(c) && c.length >= 2 ? L.latLng(c[1], c[0]) : null)
+      .filter(Boolean);
+  }
+
+  if (lineLatLngs.length > 1) {
+    L.polyline(lineLatLngs, { color: "#1E88E5", weight: 5, opacity: 0.9 }).addTo(group);
+    editTourMap.fitBounds(L.latLngBounds(lineLatLngs), { padding: [30, 30] });
+  }
+
+  addStoredSegmentPopups(tour, lineLatLngs);
+
+  currentTourLayer = group;
+}
+
+// Nur segmentData nutzen (keine Rekonstruktion, kein Fallback)
+function addStoredSegmentPopups(tour, lineLatLngs) {
+  const segData = tour.routeGeojson?.properties?.segmentData;
+  if (!Array.isArray(segData) || !segData.length || !lineLatLngs.length) return;
+
+  currentSegmentPopupsLayer = L.layerGroup().addTo(editTourMap);
+
+  segData.forEach((seg, idx) => {
+    const { startIdx, endIdx, distance } = seg;
+    if (!Number.isFinite(startIdx) || !Number.isFinite(endIdx)) return;
+    if (!lineLatLngs[startIdx] || !lineLatLngs[endIdx]) return;
+    const slice = lineLatLngs.slice(startIdx, endIdx + 1);
+    if (slice.length < 2) return;
+    const km = (distance / 1000).toFixed(2) + " km";
+    const pl = L.polyline(slice, {
+      color: '#1976D2',
+      weight: 7,
+      opacity: 0.25
+    }).addTo(currentSegmentPopupsLayer);
+    const midIdx = Math.round(slice.length / 2);
+    const mid = slice[midIdx] || slice[0];
+    pl.bindTooltip(`Abschnitt ${idx + 1}: ${km}`, {
+      permanent: true,
+      direction: 'center',
+      className: 'segment-tooltip'
+    });
+  });
+}
+
+// Zeigt die Route einer Tour an und lädt bei Bedarf die Tour-Daten
 function showTourOnMap(name) {
   const row = Array.from(document.querySelectorAll("#tour-table-body tr"))
     .find(r => {
       try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
     });
-
   let tour = row ? JSON.parse(row.dataset.tour) : null;
 
   if (!tour) {
-    console.warn("Tour nicht im DOM gefunden – Fallback /get-tours");
     fetch("/get-tours")
       .then(r => r.json())
       .then(list => {
@@ -80,58 +173,6 @@ function showTourOnMap(name) {
     return;
   }
   renderTourOnMap(tour);
-}
-
-function renderTourOnMap(tour) {
-  if (!window.editTourMap) {
-    console.warn("editTourMap fehlt.");
-    return;
-  }
-
-  // Alte Layer entfernen
-  if (currentTourLayer) {
-    currentTourLayer.remove();
-    currentTourLayer = null;
-  }
-
-  const group = L.layerGroup().addTo(editTourMap);
-
-  // Marker
-  (tour.waypoints || []).forEach((wp, i) => {
-    if (Number.isFinite(wp.lat) && Number.isFinite(wp.lng)) {
-      L.marker([wp.lat, wp.lng])
-        .bindPopup(`${tour.name}<br>Punkt ${i + 1}`)
-        .addTo(group);
-    }
-  });
-
-  let lineLatLngs = [];
-
-  if (tour.routeGeojson?.geometry?.type === "LineString" &&
-      Array.isArray(tour.routeGeojson.geometry.coordinates)) {
-    lineLatLngs = tour.routeGeojson.geometry.coordinates
-      .map(c => Array.isArray(c) && c.length >= 2 ? L.latLng(c[1], c[0]) : null)
-      .filter(Boolean);
-  }
-
-  if (lineLatLngs.length < 2 && Array.isArray(tour.waypoints) && tour.waypoints.length > 1) {
-    lineLatLngs = tour.waypoints
-      .filter(wp => Number.isFinite(wp.lat) && Number.isFinite(wp.lng))
-      .map(wp => L.latLng(wp.lat, wp.lng));
-  }
-
-  if (lineLatLngs.length > 1) {
-    L.polyline(lineLatLngs, {
-      color: "#1E88E5",
-      weight: 5,
-      opacity: 0.9
-    }).addTo(group);
-    editTourMap.fitBounds(L.latLngBounds(lineLatLngs), { padding: [30, 30] });
-  } else {
-    console.info("Keine Liniengeometrie darstellbar.");
-  }
-
-  currentTourLayer = group;
 }
 
 // Lädt die Tour als GeoJSON-Datei herunter
@@ -154,24 +195,27 @@ function downloadTour(name) {
 // Löscht die ausgewählte Tour
 async function deleteTour(name) {
   if (!confirm("Möchtest du die Tour wirklich löschen?")) return;
-  await fetch("/delete-tour", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name })
-  });
+  try {
+    await fetch("/delete-tour", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name })
+    });
+  } catch (_) {}
   loadTours();
 }
 
-// Bearbeiten der ausgewählten Tour (nur Namen und Beschreibung)
+// Bearbeiten der ausgewählten Tour (nur Name & Beschreibung; Distanz/Dauer bleiben schreibgeschützt)
 function editTour(name) {
-    const tableBody = document.getElementById("tour-table-body");
-    const rows = tableBody.querySelectorAll("tr");
+  const tableBody = document.getElementById("tour-table-body");
+  const rows = tableBody.querySelectorAll("tr");
 
-    // Finde die Zeile der aktuellen Tour
-    const row = Array.from(rows).find(r => JSON.parse(r.dataset.tour).name === name);
-    if (!row) return;
+  const row = Array.from(rows).find(r => {
+    try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+  });
+  if (!row) return;
 
-    const tour = JSON.parse(row.dataset.tour);
+  const tour = JSON.parse(row.dataset.tour);
 
     // Buttons nur für diese Zeile umwandeln
     row.querySelector("td:nth-child(5)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
@@ -179,49 +223,74 @@ function editTour(name) {
     row.querySelector("td:nth-child(7)").innerHTML = `<img src="images/save.png" alt="Speichern" style="height:25px;cursor:pointer;" onclick="saveTourChanges('${name}')">`;
     row.querySelector("td:nth-child(8)").innerHTML = `<img src="images/cancel.png" alt="Abbrechen" style="height:25px;cursor:pointer;" onclick="cancelTour('${name}')">`;
 
-    // Zellen in Input-Felder umwandeln
-    row.querySelector("td:nth-child(1)").innerHTML = `<input type="text" class="form-control" value="${tour.name}">`;
-    row.querySelector("td:nth-child(2)").innerHTML = `<input type="text" class="form-control" value="${tour.description || ""}">`;
+  // View (5) & Download (6) unverändert lassen.
+  // Edit (7) -> Save; Delete (8) -> Cancel
+  row.querySelector("td:nth-child(7)").innerHTML =
+    `<img src="images/save.png" alt="Speichern" style="height:25px;cursor:pointer;" onclick="saveTourChanges('${name}')">`;
+  row.querySelector("td:nth-child(8)").innerHTML =
+    `<img src="images/cancel.png" alt="Abbrechen" style="height:25px;cursor:pointer;" onclick="cancelTourEditing('${name}')">`;
 }
 
-// Speichern der Änderungen
+// Speichern der Änderungen (nur Name & Beschreibung)
 async function saveTourChanges(name) {
-    const tableBody = document.getElementById("tour-table-body");
-    const rows = tableBody.querySelectorAll("tr");
-    const row = Array.from(rows).find(r => JSON.parse(r.dataset.tour).name === name);
-    if (!row) return;
+  const tableBody = document.getElementById("tour-table-body");
+  const rows = tableBody.querySelectorAll("tr");
+  const row = Array.from(rows).find(r => {
+    try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+  });
+  if (!row) return;
 
-    const tour = JSON.parse(row.dataset.tour);
+  const original = JSON.parse(row.dataset.tour);
+  const inputs = row.querySelectorAll("input");
+  if (inputs.length < 2) return;
 
-    // Inputs auslesen
-    const inputs = row.querySelectorAll("input");
-    const newName = inputs[0].value.trim();
-    const newDescription = inputs[1].value.trim();
+  const newName = inputs[0].value.trim();
+  const newDescription = inputs[1].value.trim();
 
-    if (!newName || !newDescription) {
-        alert("Name und Beschreibung dürfen nicht leer sein.");
-        return;
+  if (!newName) {
+    alert("Name darf nicht leer sein.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/edit-tour", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        oldName: original.name,
+        name: newName,
+        description: newDescription,
+        waypoints: original.waypoints,
+        routeGeojson: original.routeGeojson
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      alert(result.error || "Fehler beim Speichern der Tour.");
+      return;
     }
 
-    try {
-        const response = await fetch("/edit-tour", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                oldName: tour.name,
-                name: newName,
-                description: newDescription,
-                waypoints: tour.waypoints,
-                routeGeojson: tour.routeGeojson
-            }),
-        });
+    // Zellen zurücksetzen
+    row.querySelector("td:nth-child(1)").textContent = newName;
+    row.querySelector("td:nth-child(2)").textContent = newDescription ? newDescription : "-";
 
-        const result = await response.json();
+    // Aktionen (Spalten 5–8) wiederherstellen
+    row.querySelector("td:nth-child(5)").innerHTML =
+      `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${newName}')">`;
+    row.querySelector("td:nth-child(6)").innerHTML =
+      `<img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${newName}')">`;
+    row.querySelector("td:nth-child(7)").innerHTML =
+      `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${newName}')">`;
+    row.querySelector("td:nth-child(8)").innerHTML =
+      `<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${newName}')">`;
 
-        if (!response.ok) {
-            alert(result.error || "Fehler beim Speichern der Tour.");
-            return;
-        }
+    // Datensatz aktualisieren (Distanz/Dauer unverändert)
+    row.dataset.tour = JSON.stringify({
+      name: newName,
+      description: newDescription,
+      waypoints: original.waypoints,
+      routeGeojson: original.routeGeojson
+    });
 
         // Tabelle wieder normal darstellen
         row.querySelector("td:nth-child(1)").textContent = newName;
@@ -247,18 +316,20 @@ async function saveTourChanges(name) {
     }
 }
 
-// Abbrechen der Bearbeitung
-function cancelTour(name) {
-    const tableBody = document.getElementById("tour-table-body");
-    const rows = tableBody.querySelectorAll("tr");
-    const row = Array.from(rows).find(r => JSON.parse(r.dataset.tour).name === name);
-    if (!row) return;
+// Abbrechen ohne Speichern
+function cancelTourEditing(name) {
+  const tableBody = document.getElementById("tour-table-body");
+  const rows = tableBody.querySelectorAll("tr");
+  const row = Array.from(rows).find(r => {
+    try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+  });
+  if (!row) return;
 
-    const tour = JSON.parse(row.dataset.tour);
+  const tour = JSON.parse(row.dataset.tour);
 
-    // Tabelle wieder normal darstellen
-    row.querySelector("td:nth-child(1)").textContent = tour.name;
-    row.querySelector("td:nth-child(2)").textContent = tour.description || "";
+  row.querySelector("td:nth-child(1)").textContent = tour.name;
+  row.querySelector("td:nth-child(2)").textContent =
+    (tour.description && tour.description.trim()) ? tour.description : "-";
 
     // Buttons wiederherstellen
     row.querySelector("td:nth-child(5)").innerHTML = '<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap(\'' + tour.name + '\')">';
@@ -266,8 +337,28 @@ function cancelTour(name) {
     row.querySelector("td:nth-child(7)").innerHTML = `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">`;
     row.querySelector("td:nth-child(8)").innerHTML = '<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour(\'' + tour.name + '\')">';
 
-    // Dataset wiederherstellen
-    row.dataset.tour = JSON.stringify(tour);
+  // Dataset wiederherstellen
+  row.dataset.tour = JSON.stringify(tour);
+}
+
+function formatTourDistance(tour) {
+  const seg = tour.routeGeojson?.properties?.segmentData;
+  if (Array.isArray(seg) && seg.length) {
+    const total = seg.reduce((sum, s) => sum + (s.distance || 0), 0);
+    return (total / 1000).toFixed(2) + " km";
+  }
+  return "-";
+}
+function formatTourDuration(tour) {
+  const seg = tour.routeGeojson?.properties?.segmentData;
+  if (Array.isArray(seg) && seg.length && seg[0].duration !== undefined) {
+    const total = seg.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const minutes = Math.round(total / 60);
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h ? `${h}h ${m}m` : `${m}m`;
+  }
+  return "-";
 }
 
 window.showTourOnMap = showTourOnMap;
@@ -275,8 +366,7 @@ window.downloadTour = downloadTour;
 window.deleteTour = deleteTour;
 window.editTour = editTour;
 window.saveTourChanges = saveTourChanges;
-window.cancelTour = cancelTour;
-
+window.cancelTourEditing = cancelTourEditing;
 // Warte bis das HTML-Element existiert
 document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("edit-tour-map")) {

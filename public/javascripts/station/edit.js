@@ -79,7 +79,9 @@ async function saveStation(station) {
         // Tabelle wieder normal darstellen
         row.querySelector("td:nth-child(1)").textContent = newName;
         row.querySelector("td:nth-child(2)").textContent = newDescription;
-        row.querySelector("td:nth-child(3)").innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
+        row.querySelector("td:nth-child(3)").innerHTML = newUrl
+          ? `<a href="${newUrl}" target="_blank" rel="noopener">${newUrl}</a>`
+          : "-";
 
         // Buttons wiederherstellen
         row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
@@ -116,7 +118,9 @@ function cancelStation(station) {
     // Tabelle wieder normal darstellen
     row.querySelector("td:nth-child(1)").textContent = station.name;
     row.querySelector("td:nth-child(2)").textContent = station.description;
-    row.querySelector("td:nth-child(3)").innerHTML = `<a href="${station.url}" target="_blank">${station.url}</a>`;
+    row.querySelector("td:nth-child(3)").innerHTML = (station.url && station.url.trim())
+      ? `<a href="${station.url}" target="_blank" rel="noopener">${station.url}</a>`
+      : "-";
 
     // Buttons wiederherstellen
     row.querySelector("td:nth-child(4)").innerHTML = '<img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;">';
