@@ -54,14 +54,14 @@ async function loadStationsOnMap() {
     const nameToIndex = new Map(orderedNames.map((n, i) => [n, i]));
     const byName = new Map(stations.map(s => [s.name, s]));
 
-    const popupHtml = (name, description) => {
+    const popupHtml = (name, description, url) => {
       const i = nameToIndex.get(name);
       const num = (i !== undefined) ? (i + 1) : '?';
-      return `<div>
-    <div style="font-weight:700;font-size:14px">#${num}</div>
-    <div><b>${name}</b></div>
-    ${description ? `<div>${description}</div>` : ``}
-  </div>`;
+      return `<div style="font-size:13px;line-height:1.25">
+  <div style="font-weight:700;font-size:14px;margin-bottom:2px;">#${num} ${name}</div>
+  ${description ? `<div>${description}</div>` : ``}
+  ${url ? `<div><a href="${url}" target="_blank" rel="noopener">Mehr...</a></div>` : ``}
+</div>`;
     };
 
     // Marker/Layer in der Reihenfolge zeichnen
@@ -83,20 +83,21 @@ async function loadStationsOnMap() {
 
       const c = bboxCenterOfGeometry(feature.geometry);
 
+      // Stelle sicher, dass beim Zeichnen url mitgegeben wird:
       if (feature.geometry.type === "Point") {
         L.geoJSON(feature, {
           pointToLayer: (_feature, latlng) => L.marker(latlng)
         })
-          .bindPopup(popupHtml(station.name, station.description))
+          .bindPopup(popupHtml(station.name, station.description, station.url))
           .addTo(routeLayer);
       } else {
         L.geoJSON(feature)
-          .bindPopup(popupHtml(station.name, station.description))
+          .bindPopup(popupHtml(station.name, station.description, station.url))
           .addTo(routeLayer);
 
         if (c) {
           L.marker([c[1], c[0]])
-            .bindPopup(popupHtml(station.name, station.description))
+            .bindPopup(popupHtml(station.name, station.description, station.url))
             .addTo(routeLayer);
         }
       }
@@ -195,39 +196,48 @@ function addSegmentPopups(routeObj) {
  */
 function saveTour() {
   const name = document.getElementById("tour-name").value.trim();
-  const description = document.getElementById("tour-description").value.trim(); // NEU
+  const description = document.getElementById("tour-description").value.trim();
 
-  if (!name) {
-    alert("Bitte einen Namen für die Tour eingeben.");
-    return;
-  }
-  if (!routeControl) {
-    alert("Bitte zuerst eine Route berechnen.");
-    return;
-  }
-  // Hole die Waypoints und Route als GeoJSON
-  const waypoints = routeControl.getWaypoints().map(wp => ({
-    lat: wp.latLng.lat,
-    lng: wp.latLng.lng
-  }));
+  if (!name) { alert("Bitte einen Namen für die Tour eingeben."); return; }
+  if (!routeControl) { alert("Bitte zuerst eine Route berechnen."); return; }
+
+  // Aktuell ausgewählte Stations-Namen in Reihenfolge (wie Marker / Route)
+  const checkedBoxes = Array.from(document.querySelectorAll("#stations-table-body input[type='checkbox']:checked"));
+  const selectedNamesOrdered = selectionOrder.filter(n => checkedBoxes.some(cb => cb.value === n));
+
+  const roundtrip = document.getElementById('check-roundtour')?.checked;
+  const waypointsRaw = routeControl.getWaypoints();
+
+  // Waypoints erweitern um stationName (Abgleich über Reihenfolge)
+  const waypoints = waypointsRaw.map((wp, idx) => {
+    let stationName = selectedNamesOrdered[idx] || null;
+    // Bei Rundtour mit geschlossenem letzten Punkt (Duplikat des ersten)
+    if (roundtrip && idx === waypointsRaw.length - 1 && selectedNamesOrdered.length > 0) {
+      stationName = selectedNamesOrdered[0];
+    }
+    return {
+      lat: wp.latLng.lat,
+      lng: wp.latLng.lng,
+      stationName
+    };
+  });
+
   const routeObj = routeControl._routes?.[0];
-  const routeGeojson = routeObj
-    ? {
-        type: "Feature",
-        properties: {
-          segmentData: routeObj.segmentData || [] // NEU
-        },
-        geometry: {
-          type: "LineString",
-          coordinates: routeObj.coordinates.map(ll => [ll.lng, ll.lat])
-        }
-      }
-    : null;
+  const routeGeojson = routeObj ? {
+    type: "Feature",
+    properties: {
+      segmentData: routeObj.segmentData || []
+    },
+    geometry: {
+      type: "LineString",
+      coordinates: routeObj.coordinates.map(ll => [ll.lng, ll.lat])
+    }
+  } : null;
 
   fetch("/save-tour", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, description, waypoints, routeGeojson }) // Beschreibung mitsenden
+    body: JSON.stringify({ name, description, waypoints, routeGeojson })
   })
     .then(res => res.json())
     .then(result => {
@@ -243,24 +253,17 @@ function saveTour() {
     .catch(() => alert("Fehler beim Speichern der Tour."));
 }
 
-// Warte bis das HTML-Element existiert
 document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("create-tour-map")) {
+  const el = document.getElementById("create-tour-map");
+  if (el) {
     initMapCreateTour();
+    // Stationen einmal laden (falls Tabelle schon gefüllt ist)
+    if (typeof loadStationsOnMap === "function") {
+      loadStationsOnMap();
+    }
+    // Größe nach kleinem Delay korrekt berechnen
+    setTimeout(() => {
+      routePlanningMap.invalidateSize();
+    }, 150);
   }
-
-  const roundtripEl = document.getElementById("check-roundtour"); 
-  if (roundtripEl) {
-    roundtripEl.addEventListener("change", () => {
-      if (!routeControl) return; 
-
-      const wps = buildWaypointsFromChecked({ closeLoop: roundtripEl.checked });
-      if (wps.length >= 2) {
-        routeControl.setWaypoints(wps);
-      } else {
-        routePlanningMap.removeControl(routeControl);
-        routeControl = null;
-      }
-    });
-  }
-})
+});

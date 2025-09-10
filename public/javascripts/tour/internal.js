@@ -36,17 +36,22 @@ async function loadStations() {
         lat = coords[1];
       }
 
+      const urlCell = station.url
+        ? `<a href="${station.url}" target="_blank">${station.url}</a>`
+        : "-";
+
       row.innerHTML = `
-                <td>
-                    <input class="form-check-input station-checkbox" 
-                           type="checkbox" 
-                           value="${station.name}" 
-                           data-lat="${lat}" 
-                           data-lng="${lng}">
-                </td>
-                <td>${station.name}</td>
-                <td>${station.description}</td>       
-            `;
+        <td>
+          <input class="form-check-input station-checkbox" 
+                 type="checkbox" 
+                 value="${station.name}" 
+                 data-lat="${lat}" 
+                 data-lng="${lng}">
+        </td>
+        <td>${station.name}</td>
+        <td>${station.description || "-"}</td>
+        <td>${urlCell}</td>
+      `;
 
       tableBody.appendChild(row);
 
