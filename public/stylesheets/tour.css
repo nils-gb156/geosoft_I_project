@@ -1,70 +1,46 @@
-#tour-table-body td:nth-child(3),
-#tour-table-body td:nth-child(4),
-#tour-table-body td:nth-child(5),
-#tour-table-body td:nth-child(6) {
-    width: 25px;        
-    text-align: center;
-}
-
-/* Icon-Spalten (View, Download, Edit, Delete) jetzt 5–8 */
 #tour-table-body td:nth-child(5),
 #tour-table-body td:nth-child(6),
 #tour-table-body td:nth-child(7),
 #tour-table-body td:nth-child(8) {
-  width:25px;
-  text-align:center;
+    width: 25px;        
+    text-align: center;
 }
 
-/* Segment-Tooltips */
-.segment-tooltip {
-  background:#5a5a5a;
-  color:#fff;
-  padding:2px 6px;
-  border-radius:4px;
-  font-size:11px;
-  line-height:1;
-  font-family:system-ui,sans-serif;
-  box-shadow:0 1px 4px rgba(0,0,0,.3);
-  border:none;
-}
-.segment-tooltip.fallback {
-  background:#455A64;
-}
-
-/* Responsive Styles aus develop beibehalten */
 @media (max-width: 767px) {
   #tour-editing table.table {
-    width:100% !important;
-    min-width:0 !important;
-    overflow-x:unset !important;
-    display:block;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: unset !important;
+    display: block;
   }
   #tour-editing table.table thead {
-    display:none;
+    display: none;
   }
   #tour-editing table.table tbody {
-    display:block;
-    width:100%;
+    display: block;
+    width: 100%;
   }
   #tour-editing table.table tbody tr {
-    display:flex;
-    flex-direction:column;
-    margin-bottom:1rem;
-    border:1px solid #A5A6A7;
-    border-radius:8px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    padding:0.5rem;
-    width:100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    border: 1px solid #A5D6A7;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 0.5rem;
+    width: 100%;
   }
-  #tour-editing table.table tbody td {
-    display:block;
-    width:100%;
-    padding:0 .3rem 0;
-    word-break:break-word;
+  #tour-editingtable.table tbody td {
+    display: block;
+    width: 100%;
+    padding: 0.3rem 0;
+    word-break: break-word;
   }
-  #tour-editing table.table tfoot {
-    display:none;
+  #tour-editingtable.table tbody td:before {
+    display: none;
   }
+  #tour-editing table.table tbody tr:nth-of-type(odd) {
+    background: #ffffff !important;
+  }
+  
 }
-
-
