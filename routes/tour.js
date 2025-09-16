@@ -3,15 +3,18 @@ const path = require('path');
 const router = express.Router();
 const db = require('../db/database');
 
-//API-Key
+// API-Key für den OpenRouteService
 const ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImIwMDE0MTI2YTczYTQwNTY5YzA5ODY5Yjg4NzFkODAzIiwiaCI6Im11cm11cjY0In0="
 
-// Route-Handler: nimmt Koordinaten entgegen, ruft ORS an und gibt die Route zurück
+/**
+ * Nimmt Koordinaten vom Frontend entgegen, fragt eine Fahrradroute beim OpenRouteService an
+ * und leitet die Antwort an das Frontend weiter.
+ */
 router.post('/route-bike', async (req, res) => {
   try {
     const { coordinates, elevation = false } = req.body || {};
 
-    // --- 1) Eingabe prüfen ---
+    // Eingabe validieren
     if (!Array.isArray(coordinates) || coordinates.length < 2) {
       return res.status(400).json({ error: 'Mindestens zwei Koordinaten nötig.' });
     }
@@ -22,7 +25,7 @@ router.post('/route-bike', async (req, res) => {
       return res.status(400).json({ error: 'Koordinatenformat muss [[lon,lat], ...] sein.' });
     }
 
-    // --- 2) Anfrage an OpenRouteService ---
+    // Anfrage an den OpenRouteService stellen
     const orsRes = await fetch('https://api.openrouteservice.org/v2/directions/cycling-regular', {
       method: 'POST',
       headers: {
@@ -33,24 +36,26 @@ router.post('/route-bike', async (req, res) => {
     });
 
     if (!orsRes.ok) {
-      // Fehler von ORS ins Log schreiben und ans Frontend weitergeben
+      // Fehler von ORS an das Frontend weitergeben
       const errText = await orsRes.text();
       console.error(`ORS Fehler (${orsRes.status}):`, errText);
       return res.status(orsRes.status).json({ error: 'ORS Anfrage fehlgeschlagen' });
     }
 
-    // --- 3) Erfolgreiche Antwort weiterreichen ---
+    // Erfolgreiche Antwort an das Frontend senden
     const data = await orsRes.json();
     return res.json(data);
 
   } catch (err) {
-    // Unerwarteter interner Fehler
+    // Unerwartete Serverfehler abfangen
     console.error('Backend-Fehler /route-bike:', err);
     return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
-// Tour speichern
+/**
+ * Speichert eine neue Tour in der Datenbank, nachdem geprüft wurde, ob der Name bereits existiert.
+ */
 router.post('/save-tour', async (req, res) => {
   const { name, description, waypoints, routeGeojson } = req.body;
   if (!name || !Array.isArray(waypoints) || !routeGeojson) {
@@ -58,6 +63,12 @@ router.post('/save-tour', async (req, res) => {
   }
   try {
     const dbInstance = db.getDb();
+    // Prüfen, ob eine Tour mit demselben Namen bereits existiert
+    const exists = await dbInstance.collection('tours').findOne({ name });
+    if (exists) {
+      return res.status(409).json({ error: "Tour mit diesem Namen existiert bereits." });
+    }
+
     await dbInstance.collection('tours').insertOne({ name, description, waypoints, routeGeojson });
     res.json({ success: true });
   } catch (err) {
@@ -65,7 +76,9 @@ router.post('/save-tour', async (req, res) => {
   }
 });
 
-// Alle Touren laden
+/**
+ * Ruft alle gespeicherten Touren aus der Datenbank ab.
+ */
 router.get('/get-tours', async (req, res) => {
   try {
     const dbInstance = db.getDb();
@@ -76,7 +89,9 @@ router.get('/get-tours', async (req, res) => {
   }
 });
 
-// Tour löschen
+/**
+ * Löscht eine Tour anhand ihres Namens aus der Datenbank.
+ */
 router.post('/delete-tour', async (req, res) => {
   const { name } = req.body;
   try {
@@ -88,11 +103,26 @@ router.post('/delete-tour', async (req, res) => {
   }
 });
 
-// Tour bearbeiten
+/**
+ * Aktualisiert eine bestehende Tour in der Datenbank.
+ * Prüft bei Namensänderung, ob der neue Name bereits vergeben ist.
+ */
 router.post('/edit-tour', async (req, res) => {
   const { oldName, name, description, waypoints, routeGeojson } = req.body;
+  if (!oldName || !name) {
+    return res.status(400).json({ error: "Ungültige Daten" });
+  }
   try {
     const dbInstance = db.getDb();
+
+    // Bei Namensänderung wird geprüft, ob der neue Name bereits existiert
+    if (oldName !== name) {
+      const nameTaken = await dbInstance.collection('tours').findOne({ name });
+      if (nameTaken) {
+        return res.status(409).json({ error: "Name bereits vergeben" });
+      }
+    }
+
     await dbInstance.collection('tours').updateOne(
       { name: oldName },
       { $set: { name, description, waypoints, routeGeojson } }

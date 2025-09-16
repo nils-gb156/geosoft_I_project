@@ -1,45 +1,47 @@
 "use strict"
 
+// Diese Datei ist für interne Logik der Touren-Erstellung zuständig.
+// Sie lädt die Liste der verfügbaren Stationen und verwaltet die Auswahlreihenfolge.
+
+// Stellt sicher, dass die globale Variable für die Auswahlreihenfolge existiert.
+window.selectionOrder = Array.isArray(window.selectionOrder) ? window.selectionOrder : [];
+
+// Lädt die Stationen in die Tabelle, sobald das Skript ausgeführt wird.
 loadStations();
 
-let selectionOrder = []; // Reihenfolge der angehakten Stationen
-
 /**
- * Läd alle Stationen aus MongoDB und stellt sie in der Tabelle dar.
+ * Lädt die verfügbaren Stationen vom Server und füllt die Auswahl-Tabelle.
+ * Für jede Station wird eine Zeile mit einer Checkbox und den relevanten Daten erstellt.
  */
 async function loadStations() {
   try {
     const response = await fetch('/get-stations');
     const stations = await response.json();
-
-    window.stationsByName = new Map(stations.map(s => [s.name, s]));
-
     const tableBody = document.getElementById("stations-table-body");
-    tableBody.innerHTML = "";
+    if (!tableBody) return;
 
+    tableBody.innerHTML = ""; // Leert die Tabelle vor dem Befüllen.
     stations.forEach(station => {
-
       const row = document.createElement("tr");
 
-      // Prüfen, ob GeoJSON & Koordinaten vorhanden sind
+      // Berechnet den Mittelpunkt der Station, um ihn als Wegpunkt-Koordinate zu verwenden.
       let lat = "";
       let lng = "";
-      if (
-        station.geojson &&
-        station.geojson.features &&
-        station.geojson.features.length > 0 &&
-        station.geojson.features[0].geometry &&
-        station.geojson.features[0].geometry.type === "Point"
-      ) {
-        const coords = station.geojson.features[0].geometry.coordinates;
-        lng = coords[0];
-        lat = coords[1];
+      let feature = null;
+      if (station.geojson?.type === 'FeatureCollection') {
+        feature = station.geojson.features?.[0];
+      } else if (station.geojson?.type === 'Feature') {
+        feature = station.geojson;
+      }
+      const center = feature ? bboxCenterOfGeometry(feature.geometry) : null;
+      if (center) {
+        lng = center[0];
+        lat = center[1];
       }
 
-      const urlCell = station.url
-        ? `<a href="${station.url}" target="_blank">${station.url}</a>`
-        : "-";
+      const urlCell = station.url ? `<a href="${station.url}" target="_blank">${station.url}</a>` : "-";
 
+      // Erstellt das HTML für die Tabellenzeile. Die Koordinaten werden in data-Attributen gespeichert.
       row.innerHTML = `
         <td>
           <input class="form-check-input station-checkbox" 
@@ -52,57 +54,41 @@ async function loadStations() {
         <td>${station.description || "-"}</td>
         <td>${urlCell}</td>
       `;
-
       tableBody.appendChild(row);
-
-      // Checkbox-Event
-      const checkbox = row.querySelector(".station-checkbox");
-      checkbox.addEventListener("change", (e) => {
-        const name = e.target.value;
-        const checked = e.target.checked;
-
-        if (e.target.checked) {
-          if (!selectionOrder.includes(name)) selectionOrder.push(name);
-        } else {
-          const i = selectionOrder.indexOf(name);
-          if (i !== -1) selectionOrder.splice(i, 1);
-        }
-
-        loadStationsOnMap();
-
-        if (checked && window.routePlanningMap) {
-          // Bei Punkten
-          let lat = parseFloat(e.target.dataset.lat);
-          let lng = parseFloat(e.target.dataset.lng);
-
-          // Bei Polygonen oder Einzel-Feature
-          if (!(isFinite(lat) && isFinite(lng))) {
-            const st = window.stationsByName?.get(name);
-            let center = null;
-
-            // FeatureCollection
-            if (st?.geojson?.type === "FeatureCollection") {
-              const f0 = st.geojson.features?.[0];
-              center = f0 ? bboxCenterOfGeometry(f0.geometry) : null;
-            }
-            // Einzelnes Feature
-            else if (st?.geojson?.type === "Feature") {
-              center = st.geojson.geometry ? bboxCenterOfGeometry(st.geojson.geometry) : null;
-            }
-
-            if (center) { lng = center[0]; lat = center[1]; }
-          }
-
-          if (isFinite(lat) && isFinite(lng)) {
-            const targetZoom = Math.max(routePlanningMap.getZoom(), 10);
-            routePlanningMap.flyTo([lat, lng], targetZoom, { duration: 0.6 });
-          }
-        }
-      });
-
-
-
     });
-
-  } catch (_) {}
+  } catch (error) {
+    console.error("Fehler beim Laden der Stationen-Tabelle:", error);
+  }
 }
+
+/**
+ * Globaler Event-Listener, der auf Änderungen an den Checkboxen der Stationen reagiert.
+ * Er pflegt die `selectionOrder` (die Reihenfolge, in der Stationen angeklickt werden)
+ * und löst die Aktualisierung der Karte aus.
+ */
+document.addEventListener('change', (e) => {
+  const cb = e.target;
+  // Stellt sicher, dass nur auf die relevanten Checkboxen reagiert wird.
+  if (!cb || !cb.classList || !cb.classList.contains('station-checkbox')) {
+    return;
+  }
+
+  const name = cb.value;
+  const order = window.selectionOrder;
+
+  // Entfernt die Station aus der Reihenfolge, falls sie bereits vorhanden ist.
+  const index = order.indexOf(name);
+  if (index !== -1) {
+    order.splice(index, 1);
+  }
+
+  // Wenn die Checkbox aktiviert wurde, wird die Station am Ende der Reihenfolge hinzugefügt.
+  if (cb.checked) {
+    order.push(name);
+  }
+
+  // Löst die Funktion zum Neuzeichnen der Marker und Routen auf der Karte aus.
+  if (typeof loadStationsOnMap === "function") {
+    loadStationsOnMap();
+  }
+});
