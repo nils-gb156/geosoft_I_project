@@ -1,8 +1,5 @@
-#stations-table-body td:nth-child(4),
-#stations-table-body td:nth-child(5),
-#stations-table-body td:nth-child(6),
-#stations-table-body td:nth-child(7) {
-    width: 25px;        
+#stations-table-body td:nth-child(4) {
+    width: 130px;        
     text-align: center;
 }
 
