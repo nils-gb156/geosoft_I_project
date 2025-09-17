@@ -49,10 +49,10 @@ async function loadTours() {
             <td>${(tour.description && tour.description.trim()) ? tour.description : "-"}</td>
             <td>${formatTourDistance(tour)}</td>
             <td>${formatTourDuration(tour)}</td>
-            <td><img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')"></td>
-            <td><img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')"></td>
-            <td><img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')"></td>
-            <td><img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')"></td>
+            <td><img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')">
+              <img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')">
+              <img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">
+              <img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')"></td>
         `;
         tableBody.appendChild(row);
     });
@@ -249,12 +249,13 @@ function editTour(name) {
     `<input type="text" class="form-control" value="${tour.name}">`;
   row.querySelector("td:nth-child(2)").innerHTML =
     `<input type="text" class="form-control" value="${tour.description || ""}">`;
-
+ 
   // Bearbeiten- und Löschen-Buttons durch Speichern- und Abbrechen-Buttons ersetzen
-  row.querySelector("td:nth-child(7)").innerHTML =
-    `<img src="images/save.png" alt="Speichern" style="height:25px;cursor:pointer;" onclick="saveTourChanges('${tour.name}')">`;
-  row.querySelector("td:nth-child(8)").innerHTML =
-    `<img src="images/cancel.png" alt="Abbrechen" style="height:25px;cursor:pointer;" onclick="cancelTourEditing('${tour.name}')">`;
+  row.querySelector("td:nth-child(5)").innerHTML =
+    `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')">
+     <img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')">
+     <img src="images/save.png" alt="Speichern" style="height:25px;cursor:pointer;" onclick="saveTourChanges('${tour.name}')">
+     <img src="images/cancel.png" alt="Abbrechen" style="height:25px;cursor:pointer;" onclick="cancelTourEditing('${tour.name}')">`;
 }
 
 /**
@@ -302,10 +303,11 @@ async function saveTourChanges(name) {
     row.querySelector("td:nth-child(2)").textContent = newDescription.trim() ? newDescription : "-";
 
     // Buttons wiederherstellen
-    row.querySelector("td:nth-child(7)").innerHTML =
-      `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${newName}')">`;
-    row.querySelector("td:nth-child(8)").innerHTML =
-      `<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${newName}')">`;
+    row.querySelector("td:nth-child(5)").innerHTML =
+    `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${newName}')">
+     <img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${newName}')">
+     <img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${newName}')">
+     <img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${newName}')">`;
 
     // Datensatz im HTML aktualisieren
     row.dataset.tour = JSON.stringify({
@@ -336,10 +338,11 @@ function cancelTourEditing(name) {
     (tour.description && tour.description.trim()) ? tour.description : "-";
 
   // Buttons wiederherstellen
-  row.querySelector("td:nth-child(7)").innerHTML =
-    `<img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">`;
-  row.querySelector("td:nth-child(8)").innerHTML =
-    `<img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')">`;
+  row.querySelector("td:nth-child(5)").innerHTML =
+    `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')">
+     <img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${tour.name}')">
+     <img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">
+     <img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')">`;
 }
 
 /**
