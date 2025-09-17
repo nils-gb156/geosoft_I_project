@@ -76,15 +76,19 @@ async function loadStations() {
         stations.forEach(station => {
             const row = document.createElement("tr");
 
-            row.innerHTML = `
-                <td>${station.name}</td>
-                <td>${station.description}</td>
-                <td><a href="${station.url}" target="_blank">${station.url}</a></td>
-                <td class="text-center"><img src="images/view.png" alt="Ansehen" data-action="view" style="height: 25px; cursor: pointer;"></td>
-                <td class="text-center"><img src="images/download.png" alt="Herunterladen" data-action="download" style="height: 25px; cursor: pointer;"></td>
-                <td class="text-center"><img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="height: 25px; cursor: pointer;"></td>
-                <td class="text-center"><img src="images/delete.png" alt="Löschen" data-action="delete" style="height: 25px; cursor: pointer;"></td>
-            `;
+            const urlCell = (station.url && station.url.trim())
+        ? `<a href="${station.url}" target="_blank" rel="noopener">${station.url}</a>`
+        : "-";
+
+      row.innerHTML = `
+        <td>${station.name}</td>
+        <td>${station.description}</td>
+        <td>${urlCell}</td>
+        <td><img src="images/view.png" alt="Ansehen" data-action="view" style="width:25px;cursor:pointer;">
+            <img src="images/download.png" alt="Herunterladen" data-action="download" style="width:25px;cursor:pointer;">
+            <img src="images/edit.png" alt="Bearbeiten" data-action="edit" style="width:25px;cursor:pointer;">
+            <img src="images/delete.png" alt="Löschen" data-action="delete" style="width:25px;cursor:pointer;"></td>
+      `;
             row.dataset.station = JSON.stringify(station);
             tableBody.appendChild(row);
 

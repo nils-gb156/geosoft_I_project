@@ -105,83 +105,120 @@ function hasExactlyOneFeature(geojson) {
 }
 
 
-// Polyline-Decoder (Umwandlung in Koordinaten Array)
-
-function decodePolyline(str, precision = 5) {
-    let index = 0, lat = 0, lng = 0, coordinates = [];
-    const factor = Math.pow(10, precision);
-    while (index < str.length) {
-        let b, shift = 0, result = 0;
-        do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        const deltaLat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-        shift = 0; result = 0;
-        do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        const deltaLng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-        lat += deltaLat; lng += deltaLng;
-        coordinates.push(L.latLng(lat / factor, lng / factor));
-    }
-    return coordinates;
-}
-
 // Alle Koordinaten einer GeoJSON-Geometry durchlaufen
 
+/**
+ * Iteriert über jede Koordinate in einer GeoJSON-Geometrie und führt eine Callback-Funktion aus.
+ * Unterstützt verschiedene Geometrietypen, einschließlich GeometryCollection.
+ * @param {object} geom Die GeoJSON-Geometrie.
+ * @param {function} cb Die Callback-Funktion, die für jede Koordinate aufgerufen wird. Das Koordinatenpaar wird als Argument übergeben.
+ */
 function eachCoordInGeometry(geom, cb) {
   if (!geom) return;
   if (geom.type === 'GeometryCollection') {
     (geom.geometries || []).forEach(g => eachCoordInGeometry(g, cb));
     return;
   }
+  /**
+   * Eine rekursive Hilfsfunktion, die in verschachtelte Koordinaten-Arrays eintaucht.
+   * @param {Array} coords Das Array von Koordinaten.
+   */
   function dive(coords) {
     if (!coords) return;
-    if (typeof coords[0] === 'number') cb(coords); else coords.forEach(dive);
+    // Wenn das erste Element eine Zahl ist, handelt es sich um ein Koordinatenpaar.
+    if (typeof coords[0] === 'number') cb(coords); 
+    // Andernfalls weiter in die Verschachtelung eintauchen.
+    else coords.forEach(dive);
   }
+  // Bei einem 'Point' die Koordinaten direkt an den Callback übergeben.
   if (geom.type === 'Point') cb(geom.coordinates);
+  // Bei anderen Geometrietypen (LineString, Polygon etc.) die rekursive Funktion starten.
   else dive(geom.coordinates);
 }
 
 // Mitte der Bounding Box für beliebige Geometrien (hier für Mittelpunktbestimmung des Polygons)
 
+/**
+ * Berechnet den Mittelpunkt der Bounding Box einer beliebigen GeoJSON-Geometrie.
+ * Dies ist nützlich, um einen zentralen Punkt für Polygone oder komplexe Geometrien zu finden.
+ * @param {object} geom Die GeoJSON-Geometrie.
+ * @returns {Array<number>|null} Ein Array mit [longitude, latitude] des Mittelpunkts oder null, wenn keine gültigen Koordinaten gefunden wurden.
+ */
 function bboxCenterOfGeometry(geom) {
   let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  
+  // Iteriert über alle Koordinaten, um die äußeren Grenzen (Bounding Box) zu finden.
   eachCoordInGeometry(geom, ([lng, lat]) => {
-    if (!isFinite(lng) || !isFinite(lat)) return;
+    if (!isFinite(lng) || !isFinite(lat)) return; // Ungültige Koordinaten überspringen.
     if (lng < minLng) minLng = lng;
     if (lng > maxLng) maxLng = lng;
     if (lat < minLat) minLat = lat;
     if (lat > maxLat) maxLat = lat;
   });
+
+  // Wenn keine gültigen Koordinaten gefunden wurden, null zurückgeben.
   if (!isFinite(minLng)) return null;
+  
+  // Den Mittelpunkt der Bounding Box berechnen.
   return [(minLng + maxLng) / 2, (minLat + maxLat) / 2]; // [lng, lat]
 }
 
 // Funktion baut Waypoints aus aktuell gecheckten Checkboxen
+/**
+ * Erstellt eine Liste von Leaflet-Routing-Wegpunkten aus den aktuell ausgewählten Stations-Checkboxes.
+ * Die Reihenfolge der Wegpunkte wird durch das globale `window.selectionOrder`-Array bestimmt.
+ * @param {object} [opts={}] Optionen für die Wegpunkterstellung.
+ * @param {boolean} [opts.closeLoop=false] Wenn true, wird der erste Wegpunkt am Ende hinzugefügt, um eine geschlossene Schleife zu bilden.
+ * @returns {Array<L.Routing.waypoint>} Ein Array von Leaflet-Wegpunkten.
+ */
+function buildWaypointsFromChecked(opts = {}) {
+  const closeLoop = !!opts.closeLoop;
 
-function buildWaypointsFromChecked() {
+  // Alle Checkboxen, die aktuell ausgewählt sind.
   const checkedBoxes = Array.from(document.querySelectorAll("#stations-table-body input[type='checkbox']:checked"));
   const checkedSet = new Set(checkedBoxes.map(cb => cb.value));
   const byNameCb = new Map(checkedBoxes.map(cb => [cb.value, cb]));
 
-  const orderedNames = selectionOrder.filter(name => checkedSet.has(name));
+  // Filtert die globale Auswahlreihenfolge, um nur die aktuell ausgewählten Stationen zu berücksichtigen.
+  const orderedNames = (window.selectionOrder || []).filter(name => checkedSet.has(name));
 
-  return orderedNames.map(name => {
+  // Erstellt die Wegpunkte in der korrekten Reihenfolge.
+  const wps = orderedNames.map(name => {
     const cb = byNameCb.get(name);
-
     let lat = parseFloat(cb?.dataset?.lat);
     let lng = parseFloat(cb?.dataset?.lng);
 
-    //BBox-Mitte aus GeoJSON (für Polygone)
+    // Wenn keine Koordinaten im Checkbox-Dataset vorhanden sind, wird der Mittelpunkt der GeoJSON-Geometrie berechnet.
     if (!(isFinite(lat) && isFinite(lng))) {
       const station = window.stationsByName?.get(name);
-      const f0 = station?.geojson?.features?.[0];
-      const center = f0 ? bboxCenterOfGeometry(f0.geometry) : null; 
+
+      // Unterstützt sowohl FeatureCollection als auch einzelne Feature-Objekte.
+      let feature = null;
+      if (station?.geojson?.type === "FeatureCollection") {
+        feature = station.geojson.features?.[0];
+      } else if (station?.geojson?.type === "Feature") {
+        feature = station.geojson;
+      }
+
+      // Berechnet den Mittelpunkt der Geometrie.
+      const center = feature ? bboxCenterOfGeometry(feature.geometry) : null;
       if (center) {
         lng = center[0];
         lat = center[1];
       }
     }
 
+    // Erstellt den Wegpunkt, wenn gültige Koordinaten vorhanden sind.
     return (isFinite(lat) && isFinite(lng))
       ? L.Routing.waypoint(L.latLng(lat, lng))
       : null;
-  }).filter(Boolean);
+  }).filter(Boolean); // Entfernt alle null-Einträge.
+
+  // Fügt den ersten Wegpunkt am Ende hinzu, um die Route zu schließen.
+  if (closeLoop && wps.length >= 2) {
+    const first = wps[0];
+    wps.push(L.Routing.waypoint(first.latLng));
+  }
+  return wps;
 }
+

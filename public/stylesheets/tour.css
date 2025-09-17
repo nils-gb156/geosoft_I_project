@@ -1,0 +1,22 @@
+/* Spaltenbreite für Länge */
+#tour-table-body td:nth-child(3) {
+    width: 150px;        
+    text-align: left;
+}
+
+/* Spaltenbreite für Dauer */
+#tour-table-body td:nth-child(4) {
+    width: 150px;        
+    text-align: left;
+}
+
+
+/* Spaltenbreite für Buttons */
+#tour-table-body td:nth-child(5) {
+    width: 150px;        
+    text-align: center;
+}
+
+#tour-table-body td:last-child img {
+    margin-right: 5px;
+}

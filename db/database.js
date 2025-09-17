@@ -1,24 +1,21 @@
-const { MongoClient } = require("mongodb")
+const { MongoClient } = require("mongodb");
 
-const url = "mongodb://mongo:27017"
-const client = new MongoClient(url)
-const dbName = "geosoftware_I"
-const collectionName = "stations"
+const url = process.env.MONGO_URI || "mongodb://localhost:27017/geosoftware_I";
+const client = new MongoClient(url);
 
 let db;
 
 async function connect() {
-    const client = new MongoClient(url);
     await client.connect();
-    console.log('MongoDB verbunden');
+    console.log("MongoDB verbunden:", url);
 
-    db = client.db(dbName);
+    db = client.db();
 }
 
 // Zugriff auf DB
 function getDb() {
     if (!db) {
-        throw new Error('DB ist nicht verbunden. Erst connect() aufrufen.');
+        throw new Error("DB ist nicht verbunden. Erst connect() aufrufen.");
     }
     return db;
 }

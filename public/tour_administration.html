@@ -25,10 +25,16 @@
 
     <script defer src="javascripts/main.js"></script>
     <script defer src="javascripts/tour/internal.js"></script>
+    <script src="/javascripts/tour/orsRouter.js"></script>
     <script defer src="javascripts/tour/create.js"></script>
     <script defer src="javascripts/tour/edit.js"></script>
+    <script defer src="javascripts/tour/delete.js"></script>
 
     <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/tour.css">
+
+   
+
 
 
 </head>
@@ -48,7 +54,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link" href="/touren">Tour-Verwaltung</a>
+                            <a class="nav-link active" href="/touren">Touren-Verwaltung</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/stationen">Stations-Verwaltung</a>
@@ -76,6 +82,14 @@
                             <div class="input-group">
                                 <span class="input-group-text" style="width: 140px;">Name</span>
                                 <input id="tour-name" type="text" class="form-control" aria-label="Name">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <span class="input-group-text" style="width: 140px;">Beschreibung</span>
+                                <input id="tour-description" type="text" class="form-control" aria-label="Beschreibung">
                             </div>
                         </div>
                     </div>
@@ -116,9 +130,11 @@
 
             <table class="table">
                 <thead>
-                    <th></th>
-                    <th>Name</th>
-                    <th>Beschreibung</th>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Beschreibung</th>
+                        <th>URL</th>
                     </tr>
                 </thead>
                 <tbody id="stations-table-body"></tbody>
@@ -137,13 +153,13 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th></th> <!-- Button zum Anzeigen auf der Karte-->
-                        <th></th> <!-- Button zum Bearbeiten-->
-                        <th></th> <!-- Button zum Löschen-->
+                        <th>Beschreibung</th>
+                        <th>Länge</th>
+                        <th>Dauer</th>
+                        <th></th> 
                     </tr>
                 </thead>
                 <tbody id="tour-table-body"></tbody>
-                <!-- Das befüllen der Tabelle funktioniert genau so wie bei den Stationen oben auf der Seite Stations-Verwaltung-->
             </table>
 
         </div>

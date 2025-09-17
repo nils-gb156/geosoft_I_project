@@ -11,6 +11,15 @@ footer {
   z-index: 1000;
 } 
 
+header .navbar-nav .nav-link.active {
+  color: black;
+  font-weight: bold;
+}
+footer .nav .nav-link.active {
+  color: black;
+  font-weight: bold;
+}
+
 /* Hintergrundfarben */
 header nav.navbar {
   background-color: #A5D6A7;
@@ -63,6 +72,14 @@ span {
   color: #000000 !important;      
 }
 
+.leaflet-control span {
+  background-color: white !important;
+}
+
+.leaflet-popup-close-button span {
+  background-color: white !important;
+}
+
 /* Input */
 input {
   border-color: #A5D6A7 !important;
@@ -101,7 +118,7 @@ border: 2px solid #A5D6A7 !important;
   border-color: #A5D6A7 !important;
 }
 .form-check-input:checked {
-  background-color: #388E3C !important;
+  background-color: #A5D6A7 !important;
   border-color: #388E3C !important;
 }
 
@@ -128,4 +145,64 @@ table, table th, table td {
 /* Linie unter Überschrift */
 .border-bottom {
   border-bottom-color: #A5D6A7 !important;
+}
+
+/* Responsive Tabelle */
+@media (max-width: 767px) {
+  table.table {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: unset !important;
+    display: block;
+  }
+  table.table thead {
+    display: none;
+  }
+  table.table tbody {
+    display: block;
+    width: 100%;
+  }
+  table.table tbody tr {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    border: 1px solid #A5D6A7;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 0.5rem;
+    width: 100%;
+  }
+  table.table tbody td {
+    display: block;
+    width: 100%;
+    padding: 0.3rem 0;
+    word-break: break-word;
+  }
+  table.table tbody td:before {
+    display: none;
+  }
+  table.table tbody tr:nth-of-type(odd) {
+    background: #ffffff !important;
+  }
+  .nav-tabs .nav-link {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  /* Kartenbreiten anpassen */
+  #station-map {
+    width: 90% !important;
+  }
+
+  #edit-tour-map {
+    width: 90% !important;
+  }
+
+  /* Cards anpassen */
+  .card {
+    width: 95% !important;
+     margin-left: auto;
+    margin-right: auto;
+  }
+  
 }
