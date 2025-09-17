@@ -197,5 +197,12 @@ table, table th, table td {
   #edit-tour-map {
     width: 90% !important;
   }
+
+  /* Cards anpassen */
+  .card {
+    width: 95% !important;
+     margin-left: auto;
+    margin-right: auto;
+  }
   
 }
