@@ -188,5 +188,14 @@ table, table th, table td {
     font-size: 0.9rem;
     padding: 0.3rem 0.6rem;
   }
+
+  /* Kartenbreiten anpassen */
+  #station-map {
+    width: 90% !important;
+  }
+
+  #edit-tour-map {
+    width: 90% !important;
+  }
   
 }
