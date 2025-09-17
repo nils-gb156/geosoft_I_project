@@ -42,9 +42,9 @@ async function loadTours() {
     const tableBody = document.getElementById("tour-table-body");
     tableBody.innerHTML = "";
     tours.forEach(tour => {
-        const row = document.createElement("tr");
-        row.dataset.tour = JSON.stringify(tour);
-        row.innerHTML = `
+      const row = document.createElement("tr");
+      row.dataset.tour = JSON.stringify(tour);
+      row.innerHTML = `
             <td>${tour.name}</td>
             <td>${(tour.description && tour.description.trim()) ? tour.description : "-"}</td>
             <td>${formatTourDistance(tour)}</td>
@@ -54,7 +54,7 @@ async function loadTours() {
               <img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${tour.name}')">
               <img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${tour.name}')"></td>
         `;
-        tableBody.appendChild(row);
+      tableBody.appendChild(row);
     });
   } catch (_) {
     // Fehler beim Laden wird ignoriert, um die Nutzererfahrung nicht zu stören.
@@ -111,7 +111,7 @@ async function renderTourOnMap(tour) {
 
   let lineLatLngs = [];
   if (tour.routeGeojson?.geometry?.type === "LineString" &&
-      Array.isArray(tour.routeGeojson.geometry.coordinates)) {
+    Array.isArray(tour.routeGeojson.geometry.coordinates)) {
     lineLatLngs = tour.routeGeojson.geometry.coordinates
       .map(c => Array.isArray(c) && c.length >= 2 ? L.latLng(c[1], c[0]) : null)
       .filter(Boolean);
@@ -166,7 +166,7 @@ function addStoredSegmentPopups(tour, lineLatLngs) {
 function showTourOnMap(name) {
   const row = Array.from(document.querySelectorAll("#tour-table-body tr"))
     .find(r => {
-        try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
+      try { return JSON.parse(r.dataset.tour).name === name; } catch { return false; }
     });
   let tour = row ? JSON.parse(row.dataset.tour) : null;
 
@@ -184,6 +184,12 @@ function showTourOnMap(name) {
     return;
   }
   renderTourOnMap(tour);
+
+  // Scrollt die Karte in den sichtbaren Bereich
+  const mapElement = document.getElementById("edit-tour-map");
+  if (mapElement) {
+    mapElement.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 }
 
 /**
@@ -249,7 +255,7 @@ function editTour(name) {
     `<input type="text" class="form-control" value="${tour.name}">`;
   row.querySelector("td:nth-child(2)").innerHTML =
     `<input type="text" class="form-control" value="${tour.description || ""}">`;
- 
+
   // Bearbeiten- und Löschen-Buttons durch Speichern- und Abbrechen-Buttons ersetzen
   row.querySelector("td:nth-child(5)").innerHTML =
     `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${tour.name}')">
@@ -304,7 +310,7 @@ async function saveTourChanges(name) {
 
     // Buttons wiederherstellen
     row.querySelector("td:nth-child(5)").innerHTML =
-    `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${newName}')">
+      `<img src="images/view.png" alt="Anzeigen" style="height:25px;cursor:pointer;" onclick="showTourOnMap('${newName}')">
      <img src="images/download.png" alt="Download" style="height:25px;cursor:pointer;" onclick="downloadTour('${newName}')">
      <img src="images/edit.png" alt="Bearbeiten" style="height:25px;cursor:pointer;" onclick="editTour('${newName}')">
      <img src="images/delete.png" alt="Löschen" style="height:25px;cursor:pointer;" onclick="deleteTour('${newName}')">`;
